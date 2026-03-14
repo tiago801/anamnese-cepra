@@ -129,9 +129,10 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);min-height:100v
 .sched-cell.on{background:var(--teal);border-color:var(--teal);color:white}
 .sched-cell.on::after{content:'✓'}
 .slider-wrap{padding:8px 0 4px}
-input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;outline:none;border:none;padding:0;cursor:pointer;background:linear-gradient(90deg,var(--teal) 0%,var(--teal) var(--pct,60%),#E2E8F0 var(--pct,60%))}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:white;border:3px solid var(--teal);cursor:pointer;box-shadow:0 2px 8px rgba(14,165,160,.3);transition:transform .15s}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;outline:none;border:none;padding:0;cursor:pointer;background:#E2E8F0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:white;border:3px solid var(--teal);cursor:pointer;box-shadow:0 2px 8px rgba(14,165,160,.3);transition:transform .15s}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:white;border:3px solid var(--teal);cursor:pointer;box-shadow:0 2px 8px rgba(14,165,160,.3)}
 .slider-labels{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink3)}
 .slider-val{text-align:center;font-family:var(--ff);font-size:3.2rem;font-weight:700;color:var(--teal);line-height:1;margin:10px 0 2px}
 .slider-desc{text-align:center;font-size:.88rem;color:var(--ink3);margin-bottom:14px}
@@ -295,16 +296,44 @@ kbd{background:#F1F5F9;border:1px solid #E2E8F0;border-radius:5px;padding:2px 7p
   <div class="topbar">
     <div class="topbar-logo">Mentoria <b>CEPRA</b> <span style="font-size:.72rem;color:rgba(255,255,255,.3);margin-left:8px">Dashboard</span></div>
     <div class="topbar-right">
-      <div class="url-pill">
-        <input id="url-inp" type="text" placeholder="URL do Apps Script…" oninput="checkUrl()">
-        <button class="btn-su" onclick="saveUrl()">Salvar</button>
-        <span class="url-st off" id="url-st">Desconectado</span>
-      </div>
       <select class="sel-stu" id="sel-stu" onchange="loadStu(this.value)"></select>
-      <button class="btn-pdf2" onclick="exportPDF()">📄 Exportar PDF</button>
+      <button class="btn-pdf2" onclick="exportPDF()">📄 PDF</button>
+      <button class="btn-pdf2" style="background:linear-gradient(135deg,#10B981,#0D9488)" onclick="exportCSV()">📊 CSV</button>
+      <button class="btn-pdf2" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)" onclick="deleteStudent(curStu)">🗑️ Excluir</button>
+      <button class="btn-ghost" onclick="toggleAdmin()">⚙️ Config</button>
       <button class="btn-ghost" onclick="goHome()">← Sair</button>
     </div>
   </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="admin-panel" style="display:none;background:#1a2540;border-bottom:1px solid rgba(255,255,255,.1);padding:18px 24px">
+    <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start">
+      <!-- Logo da escola -->
+      <div>
+        <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Logo da Escola</div>
+        <img id="logo-preview" src="" style="display:none;max-height:60px;max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,.2)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="background:var(--teal);color:white;padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer">
+            📷 Enviar logo<input type="file" accept="image/*" onchange="handleLogoUpload(this)" style="display:none">
+          </label>
+          <button onclick="removeLogo()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.6);padding:7px 12px;border-radius:8px;font-size:.78rem;cursor:pointer">Remover</button>
+        </div>
+      </div>
+      <!-- Nome da escola -->
+      <div>
+        <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Cabeçalho do PDF</div>
+        <input id="cfg-school-name" type="text" placeholder="Nome da escola ou sistema" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:white;padding:8px 12px;border-radius:8px;font-size:.88rem;outline:none;margin-bottom:8px">
+        <input id="cfg-school-sub" type="text" placeholder="Subtítulo (ex: Mentoria Educacional)" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:white;padding:8px 12px;border-radius:8px;font-size:.88rem;outline:none">
+      </div>
+      <!-- Preview e salvar -->
+      <div>
+        <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Preview do Cabeçalho</div>
+        <div id="admin-preview" style="background:rgba(255,255,255,.07);border-radius:8px;padding:12px 16px;color:white;font-size:.88rem;line-height:1.6;margin-bottom:10px"></div>
+        <button onclick="saveAdminConfig()" style="background:var(--blue);border:none;color:white;padding:9px 22px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;width:100%">💾 Salvar configurações</button>
+      </div>
+    </div>
+  </div>
+
   <div class="dash-body" id="dash-body"></div>
 </div>
 
@@ -325,16 +354,86 @@ function checkPw(){
     setTimeout(()=>{b.classList.remove('shake');i.classList.remove('err')},450);i.value='';i.focus()}
 }
 
-// ══════ SHEETS ══════
+// ══════ ADMIN CONFIG (logo, school name) ══════
+let adminConfig = JSON.parse(localStorage.getItem('cepra_admin')||'{}');
+
+function saveAdminConfig(){
+  adminConfig.schoolName=document.getElementById('cfg-school-name').value||'Mentoria CEPRA';
+  adminConfig.schoolSub=document.getElementById('cfg-school-sub').value||'Sistema de Mentoria Educacional';
+  localStorage.setItem('cepra_admin',JSON.stringify(adminConfig));
+  showToast('✅ Configurações salvas!','ok');
+  updateAdminPreview();
+}
+function updateAdminPreview(){
+  const el=document.getElementById('admin-preview');
+  if(!el)return;
+  el.innerHTML=`<strong>${adminConfig.schoolName||'Mentoria CEPRA'}</strong><br><small style="color:rgba(255,255,255,.5)">${adminConfig.schoolSub||'Sistema de Mentoria Educacional'}</small>`;
+}
+function handleLogoUpload(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{adminConfig.logoData=e.target.result;localStorage.setItem('cepra_admin',JSON.stringify(adminConfig));
+    const prev=document.getElementById('logo-preview');if(prev){prev.src=e.target.result;prev.style.display='block';}
+    showToast('✅ Logo carregado!','ok');};
+  reader.readAsDataURL(file);
+}
+function removeLogo(){delete adminConfig.logoData;localStorage.setItem('cepra_admin',JSON.stringify(adminConfig));const prev=document.getElementById('logo-preview');if(prev)prev.style.display='none';showToast('Logo removido','');}
+
+// ══════ DELETE STUDENT ══════
+function deleteStudent(idx){
+  if(!confirm('Excluir o formulário de '+students[idx].name+'? Esta ação não pode ser desfeita.'))return;
+  students.splice(idx,1);
+  if(curStu>=students.length)curStu=Math.max(0,students.length-1);
+  buildSelect();
+  if(students.length>0)loadStu(curStu);
+  else document.getElementById('dash-body').innerHTML='<div style="text-align:center;padding:60px;color:var(--ink3)">Nenhum formulário cadastrado.</div>';
+  showToast('🗑️ Formulário excluído','');
+}
+
+// ══════ EXPORT CSV ══════
+function exportCSV(){
+  const headers=['Nome','E-mail','WhatsApp','Nascimento','Série','Status Curso','Curso','Universidade','Quando','Áreas','Gosta','Dificil','Motivação','Sentimento','Sono (h)','Dorme','Acorda','Ambiente','Internet','Atividades','Horas Livres','Foco','Celular','Procrastinação Freq.','Score Procrast.','Autodisciplina','Score Autod.','Ansiedade Geral','Score Ansiedad.','Espera','Obj.1','Obj.2','Obj.3','Observações'];
+  const rows=students.map(s=>[
+    s.name||'',s.email||'',s.tel||'',s.nasc||'',s.serie||'',
+    s.cursoStatus||'',s.curso||'',s.univ||'',s.quando||'',
+    (s.vocacional||[]).join('; '),s.gosta||'',s.dificil||'',
+    s.motivacao||'',s.sentimento||'',s.horasSonoNum||'',
+    s.horaDorme||'',s.horaAcorda||'',s.ambiente||'',s.acesso||'',
+    (s.ativ||[]).join('; '),s.horasLivres||'',
+    s.tempoFoco||'',s.celularEstudo||'',s.procrastFreq||'',s.scoreProcrastinacao||'',
+    s.autodisciplina||'',s.scoreAutodisciplina||'',
+    s.ansiedadeGeral||'',s.scoreAnsiedade||'',
+    (s.espera||[]).join('; '),s.obj1||'',s.obj2||'',s.obj3||'',s.obs||''
+  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"'));
+  const csv=[headers.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='CEPRA_alunos_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
+  a.click();showToast('📊 Planilha CSV exportada!','ok');
+}
+
+// ══════ SHEETS (mantido para compatibilidade, mas opcional) ══════
 function saveUrl(){SHEETS_URL=document.getElementById('url-inp').value.trim();localStorage.setItem('cepra_url',SHEETS_URL);checkUrl();showToast('✅ URL salva!','ok')}
 function checkUrl(){const v=(document.getElementById('url-inp')||{value:''}).value||SHEETS_URL;const ok=v.includes('script.google.com');const el=document.getElementById('url-st');if(el){el.className='url-st '+(ok?'on':'off');el.textContent=ok?'✓ Conectado':'Desconectado'}}
 function initUrl(){const i=document.getElementById('url-inp');if(i){i.value=SHEETS_URL;checkUrl()}}
 async function sendToSheets(payload){if(!SHEETS_URL)return false;try{await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'anamnese',payload})});return true}catch(e){return false}}
 
 // ══════ NAV ══════
+function toggleAdmin(){
+  const p=document.getElementById('admin-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block'){
+    const n=document.getElementById('cfg-school-name');
+    const s=document.getElementById('cfg-school-sub');
+    if(n)n.value=adminConfig.schoolName||'';
+    if(s)s.value=adminConfig.schoolSub||'';
+    if(adminConfig.logoData){const prev=document.getElementById('logo-preview');if(prev){prev.src=adminConfig.logoData;prev.style.display='block';}}
+    updateAdminPreview();
+  }
+}
 function goHome(){show('s-home')}
 function startForm(){show('s-form');resetForm();renderQ()}
-function showDash(){show('s-dash');buildSelect();loadStu(0);initUrl()}
+function showDash(){show('s-dash');buildSelect();loadStu(0);}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
 
 // ══════ TOAST ══════
@@ -507,7 +606,8 @@ function renderQ(){
   setTimeout(()=>{
     const inp=slide.querySelector('input[type=text],input[type=email]');
     if(inp&&q.type!=='group')inp.focus();
-    const r=slide.querySelector('input[type=range]');if(r)updateSlider(r,q);
+    const r=slide.querySelector('input[type=range]');
+    if(r){const min=q.min||1,max=q.max||12,unit=q.unit||'';updateSliderFull(r,min,max,unit);}
   },60);
   window.scrollTo(0,0);
 }
@@ -565,9 +665,22 @@ function buildQ(q,blk,bp){
   }
   if(q.type==='slider'){
     const min=q.min||1,max=q.max||5,step=q.step||1,unit=q.unit||'';
-    const v=formData[q.id]||Math.round((min+max)/2);
-    const slDescs=unit==='h'?{4:'⚠️ Muito pouco sono',5:'⚠️ Abaixo do recomendado',6:'😐 Sono razoável',7:'✅ Sono adequado (recomendado)',8:'✅ Sono bom',9:'😴 Sono ótimo',10:'😴 Dormindo bastante'}:{1:'😔 Muito desmotivado',2:'😟 Pouco motivado',3:'😐 Motivação média',4:'😊 Bem motivado',5:'🔥 Extremamente motivado!'};
-    return h+`<div class="slider-wrap"><div class="slider-val" id="slv">${v}${unit}</div><div class="slider-desc" id="sld">${slDescs[v]||''}</div><div style="margin:14px 0 8px"><input type="range" min="${min}" max="${max}" step="${step}" value="${v}" id="qsl" oninput="updateSliderFull(this,${min},${max},'${unit}',${JSON.stringify(slDescs)})"></div><div class="slider-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div></div>`;
+    const v=formData[q.id]!=null?formData[q.id]:Math.round((min+max)/2);
+    const sonoDescs={4:'⚠️ Muito pouco sono',5:'⚠️ Abaixo do recomendado',6:'😐 Sono razoável',7:'✅ Sono adequado (recomendado)',8:'✅ Sono bom',9:'😴 Sono ótimo',10:'😴 Dormindo bastante',11:'😴 Dormindo muito',12:'😴 Dormindo bastante'};
+    const motDescs={1:'😔 Muito desmotivado',2:'😟 Pouco motivado',3:'😐 Motivação média',4:'😊 Bem motivado',5:'🔥 Extremamente motivado!'};
+    const desc=(unit==='h'?sonoDescs:motDescs)[v]||'';
+    const pct=Math.round(((v-min)/(max-min))*100);
+    const bg=`linear-gradient(90deg,#0EA5A0 0%,#0EA5A0 ${pct}%,#E2E8F0 ${pct}%)`;
+    return h+`<div class="slider-wrap">
+      <div class="slider-val" id="slv">${v}${unit}</div>
+      <div class="slider-desc" id="sld">${desc}</div>
+      <div style="margin:14px 0 8px">
+        <input type="range" min="${min}" max="${max}" step="${step}" value="${v}" id="qsl"
+          style="background:${bg}"
+          oninput="updateSliderFull(this,${min},${max},'${unit}')">
+      </div>
+      <div class="slider-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div>
+    </div>`;
   }
   return h;
 }
@@ -590,24 +703,30 @@ function selR(k,v,el){el.closest('.choice-grid').querySelectorAll('.choice').for
 function togM(k,v,max,el){if(!formData[k])formData[k]=[];if(el.classList.contains('sel')){el.classList.remove('sel');el.querySelector('.choice-chk').textContent='';formData[k]=formData[k].filter(x=>x!==v)}else{if(max&&formData[k].length>=max){showToast('Máximo '+max+' opções','err');return}el.classList.add('sel');el.querySelector('.choice-chk').textContent='✓';formData[k].push(v)}}
 function setStar(s,v,c){c.querySelectorAll('.star').forEach((st,i)=>st.classList.toggle('lit',i<v));if(!formData.notas)formData.notas={};formData.notas[s]=v}
 function togSched(p,i,el){schedData[p]=schedData[p]||[0,0,0,0,0,0,0];schedData[p][i]=schedData[p][i]?0:1;el.classList.toggle('on');formData.schedule=schedData}
+function sliderGradient(el,v,min,max){
+  const pct=Math.round(((v-min)/(max-min))*100);
+  el.style.background=`linear-gradient(90deg,#0EA5A0 0%,#0EA5A0 ${pct}%,#E2E8F0 ${pct}%)`;
+}
 function updateSlider(el,q){
-  // Legacy compatibility
   const v=parseInt(el.value);
-  const min=q&&q.min?q.min:1,max=q&&q.max?q.max:5,unit=q&&q.unit?q.unit:'';
-  const pct=((v-min)/(max-min))*100;
-  el.style.setProperty('--pct',pct+'%');
+  const min=(q&&q.min!=null)?q.min:1;
+  const max=(q&&q.max!=null)?q.max:5;
+  const unit=(q&&q.unit)?q.unit:'';
+  sliderGradient(el,v,min,max);
   const ve=document.getElementById('slv');const de=document.getElementById('sld');
   if(ve)ve.textContent=v+unit;
   const curQ=vQs()[qIdx];
   if(curQ&&curQ.id)formData[curQ.id]=v;
   if(curQ&&curQ.id==='motivacao')formData.motivacao=v;
 }
-function updateSliderFull(el,min,max,unit,descs){
+function updateSliderFull(el,min,max,unit){
   const v=parseInt(el.value);
-  const pct=((v-min)/(max-min))*100;
-  el.style.setProperty('--pct',pct+'%');
+  sliderGradient(el,v,min,max);
+  const sonoDescs={4:'⚠️ Muito pouco sono',5:'⚠️ Abaixo do recomendado',6:'😐 Sono razoável',7:'✅ Sono adequado (recomendado)',8:'✅ Sono bom',9:'😴 Sono ótimo',10:'😴 Dormindo bastante',11:'😴 Dormindo muito',12:'😴 Dormindo bastante'};
+  const motDescs={1:'😔 Muito desmotivado',2:'😟 Pouco motivado',3:'😐 Motivação média',4:'😊 Bem motivado',5:'🔥 Extremamente motivado!'};
+  const descs=unit==='h'?sonoDescs:motDescs;
   const ve=document.getElementById('slv');const de=document.getElementById('sld');
-  if(ve)ve.textContent=v+unit;
+  if(ve)ve.textContent=v+(unit||'');
   if(de)de.textContent=descs[v]||'';
   const curQ=vQs()[qIdx];
   if(curQ&&curQ.id)formData[curQ.id]=v;
@@ -961,112 +1080,274 @@ async function exportPDF(){
   const fn=(sz,w='normal')=>{doc.setFontSize(sz);doc.setFont('helvetica',w)};
   let y=[52];
   const chk=n=>{if(y[0]+n>H-16){doc.addPage();hdr();y[0]=28}};
+  const schoolLogo=adminConfig.logoData||null;
+  const schoolName=adminConfig.schoolName||'Mentoria CEPRA';
+  const schoolSub=adminConfig.schoolSub||'Sistema de Mentoria Educacional';
 
   function hdr(){
     sf(12,18,32);doc.rect(0,0,W,11,'F');sf(14,165,160);doc.rect(0,10.2,W,1,'F');
-    fn(6.5);st(120,160,200);doc.text('Mentoria CEPRA  ·  '+s.name,M,7);doc.text('Emitido: '+hoje,W-M,7,{align:'right'});
+    fn(6.5);st(120,160,200);doc.text(schoolName+'  ·  '+s.name,M,7);doc.text('Emitido: '+hoje,W-M,7,{align:'right'});
   }
-  function sec(label,letter){chk(16);y[0]+=4;sf(239,246,255);doc.roundedRect(M,y[0],CW,9,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,9,'F');fn(9,'bold');st(15,27,45);doc.text(letter+'.  '+label,M+7,y[0]+6.2);y[0]+=13}
-  function pair(l1,v1,l2,v2){
-    chk(10);const hw=(CW-4)/2;
-    [[M,l1,v1],[M+hw+4,l2,v2]].forEach(([x,l,v])=>{sf(248,250,255);doc.roundedRect(x,y[0],hw,8,1.5,1.5,'F');fn(6,'bold');st(100,116,139);doc.text((l||'').toUpperCase(),x+3,y[0]+3.2);fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(String(v||'—'),hw-7)[0],x+3,y[0]+7)});y[0]+=10
+  function sec(label,letter,desc){
+    chk(desc?22:16);y[0]+=4;
+    sf(239,246,255);doc.roundedRect(M,y[0],CW,desc?16:9,2,2,'F');
+    sf(26,86,219);doc.rect(M,y[0],3.5,desc?16:9,'F');
+    fn(9,'bold');st(15,27,45);doc.text(letter+'.  '+label,M+7,y[0]+6.2);
+    if(desc){fn(7,'italic');st(80,100,140);doc.text(doc.splitTextToSize(desc,CW-12)[0],M+7,y[0]+11.5);}
+    y[0]+=(desc?20:13);
   }
-  function full(label,value){chk(10);sf(248,250,255);doc.roundedRect(M,y[0],CW,8,1.5,1.5,'F');fn(6,'bold');st(100,116,139);doc.text((label||'').toUpperCase(),M+3,y[0]+3.2);fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(String(value||'—'),CW-8)[0],M+3,y[0]+7);y[0]+=10}
-  function tags(label,arr){
+  function pair(l1,v1,l2,v2,e1,e2){
+    chk(e1||e2?16:10);const hw=(CW-4)/2;
+    [[M,l1,v1,e1],[M+hw+4,l2,v2,e2]].forEach(([x,l,v,exp])=>{
+      const h=exp?14:8;
+      sf(248,250,255);doc.roundedRect(x,y[0],hw,h,1.5,1.5,'F');
+      fn(6,'bold');st(100,116,139);doc.text((l||'').toUpperCase(),x+3,y[0]+3.2);
+      fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(String(v||'—'),hw-7)[0],x+3,y[0]+7);
+      if(exp){fn(6,'italic');st(120,140,160);doc.text(doc.splitTextToSize(exp,hw-7)[0],x+3,y[0]+11.5);}
+    });y[0]+=(e1||e2?16:10);
+  }
+  function full(label,value,expl){
+    const h=expl?14:8;chk(h+2);sf(248,250,255);doc.roundedRect(M,y[0],CW,h,1.5,1.5,'F');
+    fn(6,'bold');st(100,116,139);doc.text((label||'').toUpperCase(),M+3,y[0]+3.2);
+    fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(String(value||'—'),CW-8)[0],M+3,y[0]+7);
+    if(expl){fn(6,'italic');st(120,140,160);doc.text(doc.splitTextToSize(expl,CW-8)[0],M+3,y[0]+11.5);}
+    y[0]+=h+2;
+  }
+  function tags(label,arr,expl){
     if(!arr||!arr.length)return;
     const str=(arr||[]).join('  ·  ');
-    chk(12);sf(240,247,255);doc.roundedRect(M,y[0],CW,10,2,2,'F');fn(6,'bold');st(100,116,139);doc.text((label||'').toUpperCase(),M+3,y[0]+4.2);fn(8,'normal');st(26,86,219);doc.text(doc.splitTextToSize(str,CW-8)[0],M+3,y[0]+8.5);y[0]+=13
+    const h=expl?16:10;chk(h+2);sf(240,247,255);doc.roundedRect(M,y[0],CW,h,2,2,'F');
+    fn(6,'bold');st(100,116,139);doc.text((label||'').toUpperCase(),M+3,y[0]+4.2);
+    fn(8,'normal');st(26,86,219);doc.text(doc.splitTextToSize(str,CW-8)[0],M+3,y[0]+8.5);
+    if(expl){fn(6,'italic');st(80,100,140);doc.text(doc.splitTextToSize(expl,CW-8)[0],M+3,y[0]+13);}
+    y[0]+=h+2;
   }
-  function nota2c(v){return v>=4?[[209,250,229],[6,95,70],[16,185,129]]:v>=3?[[254,243,199],[146,64,14],[245,158,11]]:[[255,228,230],[159,18,57],[244,63,94]]}
+  function nota2c(v){return v>=4?[[209,250,229],[6,95,70],[16,185,129]]:v>=3&&v>0?[[254,243,199],[146,64,14],[245,158,11]]:v>0?[[255,228,230],[159,18,57],[244,63,94]]:[[241,245,249],[148,163,184],[148,163,184]]}
+  function scoreBar(label,val,max,color,expl){
+    const h=expl?16:10;chk(h+2);
+    const[r,g,b]=hx(color);
+    sf(248,250,255);doc.roundedRect(M,y[0],CW,h,1.5,1.5,'F');
+    fn(6,'bold');st(100,116,139);doc.text(label.toUpperCase(),M+3,y[0]+3.2);
+    const bw=CW-50;
+    sf(220,228,240);doc.roundedRect(M+3,y[0]+5,bw,3,1,1,'F');
+    sf(r,g,b);doc.roundedRect(M+3,y[0]+5,bw*(val/max),3,1,1,'F');
+    fn(8,'bold');st(r,g,b);doc.text(val+'/'+max,M+CW-3,y[0]+7,{align:'right'});
+    if(expl){fn(6,'italic');st(120,140,160);doc.text(doc.splitTextToSize(expl,CW-8)[0],M+3,y[0]+11.5);}
+    y[0]+=h+2;
+  }
 
   // ── CAPA ──
+  // Logo escola se disponível
+  if(schoolLogo){
+    try{doc.addImage(schoolLogo,'PNG',W-M-28,2,26,26);}catch(e){}
+  }
   sf(12,18,32);doc.rect(0,0,W,44,'F');sf(14,165,160);doc.rect(0,43,W,2,'F');sf(26,86,219);doc.rect(0,0,5,46,'F');
-  sf(14,165,160);doc.circle(M+14,22,12,'F');fn(11,'bold');st(255,255,255);doc.text(s.initials,M+14,22,{align:'center',baseline:'middle'});
-  fn(15,'bold');st(255,255,255);doc.text(s.name,M+32,14);
-  fn(8,'normal');st(150,200,240);doc.text(s.serie+' · '+s.escola,M+32,20.5);
-  fn(7.5,'normal');st(120,170,220);doc.text('Curso almejado: '+s.curso+'  ·  Área: '+s.area,M+32,26.5);
-  fn(7,'normal');st(100,150,200);doc.text('E-mail: '+(s.email||'—')+'  ·  WhatsApp: '+(s.tel||'—'),M+32,32);
-  fn(7,'bold');st(14,165,160);doc.text('FICHA INDIVIDUAL COMPLETA DO ALUNO',M+32,38.5);
+  // Escola header
+  fn(8,'bold');st(14,165,160);doc.text(schoolName.toUpperCase(),M+32,9);
+  fn(6.5,'normal');st(100,150,200);doc.text(schoolSub,M+32,13.5);
+  // Avatar
+  sf(14,165,160);doc.circle(M+14,26,12,'F');fn(11,'bold');st(255,255,255);doc.text(s.initials,M+14,26,{align:'center',baseline:'middle'});
+  // Dados do aluno
+  fn(15,'bold');st(255,255,255);doc.text(s.name,M+32,22);
+  fn(8,'normal');st(150,200,240);doc.text(s.serie,M+32,27.5);
+  fn(7.5,'normal');st(120,170,220);doc.text('Curso almejado: '+s.curso+'  ·  Área: '+s.area,M+32,32.5);
+  fn(7,'normal');st(100,150,200);doc.text('E-mail: '+(s.email||'—')+'  ·  WhatsApp: '+(s.tel||'—'),M+32,37.5);
+  fn(7,'bold');st(14,165,160);doc.text('FICHA INDIVIDUAL COMPLETA DO ALUNO',M+32,42.5);
   hdr();
 
   // ── A: IDENTIFICAÇÃO ──
-  sec('Identificação e Contato','A');
+  sec('Identificação e Contato','A','Dados pessoais e de contato do aluno para comunicação com a equipe de mentoria.');
   pair('Nome completo',s.name,'Data de nascimento',s.nasc||'—');
   pair('E-mail',s.email||'—','WhatsApp',s.tel||'—');
-  pair('Escola',s.escola||'—','Série/Ano escolar',s.serie||'—');
+  full('Série / Ano Escolar',s.serie);
 
   // ── B: VOCAÇÃO ──
-  sec('Vocação e Objetivos Acadêmicos','B');
-  pair('Status do curso','Tem curso em mente? '+s.cursoStatus||'—','Curso ou profissão almejada',s.curso||'—');
+  sec('Vocação e Objetivos Acadêmicos','B','O que o aluno pensa sobre o futuro, cursos e universidade. Essencial para direcionar a mentoria.');
+  pair('Situação vocacional',s.cursoStatus||'—','Curso ou profissão almejada',s.curso||'—');
   pair('Universidade desejada',s.univ||'—','Quando pretende fazer vestibular',s.quando||'—');
-  tags('Áreas de interesse',s.vocacional);
+  full('Preferência de universidade',s.modeloUniv||'—','Pública (gratuita, mais concorrida) ou Privada (com bolsa/financiamento).');
+  tags('Áreas de interesse',s.vocacional,'As áreas que o aluno mais se identifica — base para a orientação vocacional.');
   // Objetivos
-  chk(38);sf(237,246,255);doc.roundedRect(M,y[0],CW,34,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,34,'F');
+  chk(40);sf(237,246,255);doc.roundedRect(M,y[0],CW,36,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,36,'F');
   fn(8,'bold');st(26,86,219);doc.text('Objetivos para os próximos 6 meses',M+6,y[0]+6);
+  fn(6,'italic');st(80,100,140);doc.text('Metas concretas definidas pelo próprio aluno — base do plano de ação.',M+6,y[0]+11);
   [[s.obj1,'1'],[s.obj2,'2'],[s.obj3,'3']].filter(([v])=>v).forEach(([obj,n],i)=>{
-    sf(26,86,219);doc.circle(M+10,y[0]+13.5+i*7.5,3,'F');fn(7,'bold');st(255,255,255);doc.text(n,M+10,y[0]+13.5+i*7.5,{align:'center',baseline:'middle'});
-    fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(obj||'—',CW-20)[0],M+17,y[0]+13.5+i*7.5+1.5);
-  });y[0]+=37;
+    sf(26,86,219);doc.circle(M+10,y[0]+18+i*7,3,'F');fn(7,'bold');st(255,255,255);doc.text(n,M+10,y[0]+18+i*7,{align:'center',baseline:'middle'});
+    fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(obj||'—',CW-20)[0],M+17,y[0]+18+i*7+1.5);
+  });y[0]+=39;
 
   // ── C: DESEMPENHO ──
-  sec('Desempenho Acadêmico','C');
-  const discs=Object.entries(s.disciplinas);const hw2=(CW-4)/2;
-  discs.forEach(([d,v],i)=>{
-    const col=i%2,row=Math.floor(i/2);const cx=M+col*(hw2+4),cy=y[0]+row*9.5;
-    if(i===0)chk(discs.length/2*9.5+10);
-    const[bg,tx,bar]=nota2c(v);sf(...bg);doc.roundedRect(cx,cy,hw2,8,2,2,'F');fn(7.5,'bold');st(...tx);doc.text(d,cx+3,cy+5.2);
-    const bw=hw2-38;sf(220,228,240);doc.roundedRect(cx+hw2-bw-5,cy+2.5,bw,3,1,1,'F');sf(...bar);doc.roundedRect(cx+hw2-bw-5,cy+2.5,bw*v/5,3,1,1,'F');fn(7.5,'bold');st(...tx);doc.text(v+'/5',cx+hw2-3,cy+5.2,{align:'right'});
-  });y[0]+=Math.ceil(discs.length/2)*9.5+3;
+  sec('Desempenho Acadêmico','C','Autoavaliação do aluno em cada disciplina. Escala 1–5: 1=muito fraco, 3=regular, 5=ótimo. Cores: 🟢 bom, 🟡 regular, 🔴 precisa de atenção.');
+  // Usar disciplinas completas do DISC se disponível nos notas, senão usar s.disciplinas
+  const notasObj=s.notas||s.disciplinas||{};
+  const discEntries=Object.entries(notasObj);
+  const hw2=(CW-4)/2;
+  // Render in pairs
+  for(let i=0;i<discEntries.length;i+=2){
+    chk(10);
+    [[0,1]].forEach(()=>{});
+    const row=[discEntries[i],discEntries[i+1]].filter(Boolean);
+    row.forEach(([d,v],col)=>{
+      const cx=M+col*(hw2+4);const cy=y[0];
+      const[bg,tx,bar]=nota2c(Number(v));
+      sf(...bg);doc.roundedRect(cx,cy,hw2,8,2,2,'F');
+      fn(7.5,'bold');st(...tx);doc.text(String(d),cx+3,cy+5.2);
+      const bw=hw2-38;sf(220,228,240);doc.roundedRect(cx+hw2-bw-5,cy+2.5,bw,3,1,1,'F');
+      sf(...bar);doc.roundedRect(cx+hw2-bw-5,cy+2.5,bw*(Number(v)||0)/5,3,1,1,'F');
+      fn(7.5,'bold');st(...tx);doc.text((Number(v)||0)+'/5',cx+hw2-3,cy+5.2,{align:'right'});
+    });
+    y[0]+=9.5;
+  }
   // Média
-  const vals=Object.values(s.disciplinas).filter(v=>v>0);const media=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
-  const[mbg,mtx,mbar]=nota2c(media);chk(10);sf(245,248,255);doc.roundedRect(M,y[0],CW,8,2,2,'F');fn(8,'bold');st(15,27,45);doc.text('Média geral:',M+4,y[0]+5.2);const mbw=CW-44;sf(220,228,240);doc.roundedRect(M+32,y[0]+2,mbw,4,1,1,'F');sf(...mbar);doc.roundedRect(M+32,y[0]+2,mbw*media/5,4,1,1,'F');fn(8,'bold');st(...mtx);doc.text(media.toFixed(1)+'/5',M+CW-2,y[0]+5.2,{align:'right'});y[0]+=11;
-  pair('Disciplina favorita',s.gosta||'—','Maior dificuldade',s.dificil||'—');
-  tags('Método de estudo preferido',s.metodo);
+  const allVals=discEntries.map(([,v])=>Number(v)).filter(v=>v>0);
+  const media=allVals.length?(allVals.reduce((a,b)=>a+b,0)/allVals.length):0;
+  const[mbg,mtx,mbar]=nota2c(media);chk(10);
+  sf(245,248,255);doc.roundedRect(M,y[0],CW,8,2,2,'F');
+  fn(8,'bold');st(15,27,45);doc.text('Média geral:',M+4,y[0]+5.2);
+  const mbw=CW-44;sf(220,228,240);doc.roundedRect(M+32,y[0]+2,mbw,4,1,1,'F');
+  sf(...mbar);doc.roundedRect(M+32,y[0]+2,mbw*media/5,4,1,1,'F');
+  fn(8,'bold');st(...mtx);doc.text(media.toFixed(1)+'/5',M+CW-2,y[0]+5.2,{align:'right'});
+  y[0]+=11;
+  // Favoritas e dificuldades (arrays)
+  const gostasList=(s.gostas&&s.gostas.length>0)?s.gostas.join(', '):(s.gosta||'—');
+  const difList=(s.dificeis&&s.dificeis.length>0)?s.dificeis.join(', '):(s.dificil||'—');
+  full('Disciplinas favoritas',gostasList,'Pontos fortes a serem mantidos e aproveitados no plano.');
+  full('Principais dificuldades',difList,'Áreas que precisam de atenção prioritária no planejamento de estudos.');
+  tags('Método de estudo preferido',s.metodo,'Como o aluno aprende melhor — guia para recomendar materiais e estratégias.');
+  pair('Estilo de leitura',s.estiloLeitura||'—','Frequência de simulados',s.simulados||'—');
+  full('Rotina de revisão',s.revisao||'—','Se o aluno revisa o conteúdo ou apenas estuda na véspera.');
 
-  // ── D: ROTINA ──
-  sec('Rotina e Disponibilidade','D');
-  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],periods=['Manhã','Tarde','Noite'];
+  // ── D: ROTINA & SONO ──
+  sec('Rotina, Sono e Disponibilidade','D','A rotina real do aluno revela quando ele pode estudar e se está descansando o suficiente para aprender.');
+
+  // Grade visual de disponibilidade
+  const days2=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],periods=['Manhã','Tarde','Noite'];
   const pc=[[[207,250,244],[14,116,144]],[[219,234,254],[30,64,175]],[[237,233,254],[91,33,182]]];
   const lw=22,cw3=(CW-lw)/7,ch=7;
-  chk(ch*4+14);
-  days.forEach((d,i)=>{sf(240,244,255);doc.rect(M+lw+i*cw3,y[0],cw3-.5,5.5,'F');fn(6.5,'bold');st(70,90,140);doc.text(d,M+lw+i*cw3+cw3/2,y[0]+3.8,{align:'center'})});y[0]+=6;
+  chk(ch*4+18);
+  // Header dias
+  days2.forEach((d,i)=>{sf(240,244,255);doc.rect(M+lw+i*cw3,y[0],cw3-.5,5.5,'F');fn(6.5,'bold');st(70,90,140);doc.text(d,M+lw+i*cw3+cw3/2,y[0]+3.8,{align:'center'})});y[0]+=6;
   periods.forEach((p,pi)=>{
-    const[onBg,onTx]=pc[pi];sf(pi%2===0?248:244,pi%2===0?250:246,255);doc.rect(M,y[0],lw-1,ch,'F');fn(6.5,'bold');st(40,60,100);doc.text(p,M+2,y[0]+ch/2+1.5);
-    days.forEach((_,i)=>{const on=(s.schedule[p]||[])[i];if(on){sf(...onBg);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');fn(7,'bold');st(...onTx);doc.text('✓',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'})}else{sf(245,247,252);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');fn(7,'normal');st(210,218,230);doc.text('—',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'})}});y[0]+=ch+1;
+    const[onBg,onTx]=pc[pi];
+    sf(pi%2===0?248:244,pi%2===0?250:246,255);doc.rect(M,y[0],lw-1,ch,'F');
+    fn(6.5,'bold');st(40,60,100);doc.text(p,M+2,y[0]+ch/2+1.5);
+    days2.forEach((_,i)=>{
+      // Manhã seg-sex = escola
+      if(p==='Manhã'&&i<5){
+        sf(240,242,246);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');
+        fn(5.5,'bold');st(148,163,184);doc.text('ESC',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'});
+        return;
+      }
+      const on=(s.schedule&&s.schedule[p]&&s.schedule[p][i]);
+      if(on){sf(...onBg);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');fn(7,'bold');st(...onTx);doc.text('✓',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'});}
+      else{sf(245,247,252);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');fn(7,'normal');st(210,218,230);doc.text('—',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'});}
+    });y[0]+=ch+1;
   });
-  const tot=Object.values(s.schedule).flat().filter(x=>x).length;fn(7,'normal');st(100,116,139);doc.text('Turnos livres: '+tot+'/21',M,y[0]+4);y[0]+=8;
-  pair('Acesso à internet',s.acesso||'—','Atividades externas',(s.ativ||[]).filter(a=>a!=='Nenhuma').join(', ')||'Nenhuma');
-  if(s.ativDesc){chk(10);sf(248,250,255);doc.roundedRect(M,y[0],CW,8,1.5,1.5,'F');fn(6,'bold');st(100,116,139);doc.text('HORÁRIOS DAS ATIVIDADES',M+3,y[0]+3.2);fn(7.5,'normal');st(15,27,45);doc.text(doc.splitTextToSize(s.ativDesc,CW-8)[0],M+3,y[0]+7);y[0]+=10}
+  fn(6,'italic');st(100,116,139);doc.text('ESC = Escola (7h–12h35, seg–sex)  ·  ✓ = Turno livre para estudo  ·  — = Sem disponibilidade',M,y[0]+4);
+  y[0]+=8;
 
-  // ── E: EMOCIONAL ──
-  sec('Estado Emocional e Motivação','E');
-  pair('Como se sente',s.sentimento||'—','Nível de motivação',s.motivacao+'/5');
-  pair('Laudo/Diagnóstico',s.laudo||'Não','Situações dificultadoras',(s.dificSit||[]).join(', ')||'Nenhuma');
-  // Barra motivação
+  // Sono
+  const sonoH=s.horasSonoNum||parseInt(s.horasSono)||0;
+  const sonoAlert=sonoH>0&&sonoH<7;
+  if(sonoAlert){
+    chk(12);sf(255,228,230);doc.roundedRect(M,y[0],CW,10,2,2,'F');sf(244,63,94);doc.rect(M,y[0],3.5,10,'F');
+    fn(8,'bold');st(159,18,57);doc.text('⚠️  ALERTA DE SONO: '+sonoH+'h/noite — abaixo do mínimo recomendado (7h)',M+6,y[0]+6.5);
+    y[0]+=13;
+  }
+  pair('Dorme às',s.horaDorme||'—','Acorda às',s.horaAcorda||'—','Horário médio de ir dormir.','Horário médio de levantar.');
+  pair('Horas de sono/noite',sonoH?(sonoH+'h'):'—','Qualidade do sono',s.qualidadeSono||'—',
+    sonoAlert?'⚠️ Sono insuficiente — afeta memória e concentração.':'Sono adequado é fundamental para fixar conteúdo.',
+    'Como o aluno avalia a qualidade do seu descanso.');
+  pair('Ambiente de estudo',s.ambiente||'—','Acesso à internet',s.acesso||'—',
+    'O local onde o aluno estuda em casa.','Importante para recomendar materiais online.');
+  pair('Horas livres por semana',s.horasLivres||'—','Fim de semana',s.fimDeSemana||'—',
+    'Janela total estimada disponível para estudos.','Como costumam ser os finais de semana do aluno.');
+  const ativFiltradas=(s.ativ||[]).filter(a=>a!=='Nenhuma');
+  if(ativFiltradas.length){
+    tags('Atividades fora da escola',ativFiltradas,'Tudo que consome o tempo do aluno além das aulas.');
+    if(s.esporteDias&&s.esporteDias.length)full('Dias de esporte/academia',s.esporteDias.join(', '),'Permite ajustar o plano sem conflitar com a rotina esportiva.');
+    if(s.ativDesc)full('Horários das atividades',s.ativDesc,'Descrição detalhada para o mentor montar o cronograma real.');
+  }
+
+  // ── E: COMPORTAMENTO DE ESTUDO ──
+  sec('Comportamento e Hábitos de Estudo','E','Como o aluno estuda na prática — procrastinação, foco, organização e relação com erros. Dados essenciais para o mentor adaptar a abordagem.');
+  pair('Tempo de foco (sem distração)',s.tempoFoco||'—','Celular durante os estudos',s.celularEstudo||'—',
+    'Quanto tempo consegue se concentrar antes de se distrair.','O celular é um dos principais inimigos do foco.');
+  pair('Frequência de procrastinação',s.procrastFreq||'—','Planejamento dos estudos',s.planejamento||'—',
+    'Com que frequência adia os estudos.','Se o aluno tem cronograma ou estuda sem organização.');
+  if(s.procrastinacao&&s.procrastinacao.length){tags('Comportamentos de procrastinação identificados',s.procrastinacao,'Situações concretas que o aluno reconhece em si mesmo.');}
+  pair('Reação quando erra',s.errosProva||'—','Ansiedade antes de provas',s.ansiedadeProva||'—',
+    'Como lida com o erro — chave para desenvolvimento da resiliência.','Nível de ansiedade situacional em avaliações.');
+  pair('Relação com dificuldades',s.relacaoErro||'—','Memória e retenção',s.memorizacao||'—',
+    'Se vê o erro como aprendizado ou como fracasso.','Como o aluno absorve e retém o conteúdo estudado.');
+  pair('Autodisciplina',s.autodisciplina||'—','Rede de apoio',s.redeApoio||'—',
+    'Capacidade de estudar por conta própria.','Se tem colegas, grupo ou família que apoia os estudos.');
+  if(s.materialEstudo&&s.materialEstudo.length)tags('Materiais usados para estudar',s.materialEstudo,'O que o aluno já utiliza — evita recomendar o que ele já tem.');
+  // Scores
+  chk(50);sf(237,246,255);doc.roundedRect(M,y[0],CW,46,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,46,'F');
+  fn(8,'bold');st(26,86,219);doc.text('Scores Comportamentais (calculados automaticamente)',M+6,y[0]+6);
+  fn(6,'italic');st(80,100,140);doc.text('Indicadores gerados a partir das respostas — auxiliam o mentor a priorizar ações.',M+6,y[0]+11);
+  y[0]+=14;
+  const scores=[
+    {lbl:'Procrastinação',val:s.scoreProcrastinacao||5,max:10,color:s.scoreProcrastinacao<=3?'#10B981':s.scoreProcrastinacao<=6?'#F59E0B':'#F43F5E',exp:'0=nenhuma, 10=extrema. Acima de 6: estratégias de foco são urgentes.'},
+    {lbl:'Foco (tempo contínuo)',val:s.scoreFoco||3,max:5,color:s.scoreFoco>=4?'#10B981':s.scoreFoco>=3?'#F59E0B':'#F43F5E',exp:'1=menos de 15min, 5=mais de 1h. Baixo = trabalhar com Pomodoro.'},
+    {lbl:'Autodisciplina',val:s.scoreAutodisciplina||3,max:5,color:s.scoreAutodisciplina>=4?'#10B981':s.scoreAutodisciplina>=3?'#F59E0B':'#F43F5E',exp:'1=precisa de muita cobrança, 5=estuda sozinho sem precisar de incentivo.'},
+  ];
+  scores.forEach(sc=>{
+    const[r,g,b]=hx(sc.color);
+    fn(7,'bold');st(15,27,45);doc.text(sc.lbl+':',M+6,y[0]+4);
+    fn(7,'normal');st(r,g,b);doc.text(sc.val+'/'+sc.max,M+65,y[0]+4,{align:'right'});
+    const bw=CW-80;sf(220,228,240);doc.roundedRect(M+68,y[0]+1,bw,4,1,1,'F');
+    sf(r,g,b);doc.roundedRect(M+68,y[0]+1,bw*(sc.val/sc.max),4,1,1,'F');
+    fn(6,'italic');st(100,120,150);doc.text(sc.exp,M+6,y[0]+9);
+    y[0]+=12;
+  });
+
+  // ── F: EMOCIONAL ──
+  sec('Estado Emocional e Motivação','F','O estado emocional influencia diretamente o aprendizado. Esses dados ajudam o mentor a adaptar o tom e a abordagem das sessões.');
+  pair('Como se sente em relação ao futuro',s.sentimento||'—','Nível de motivação',s.motivacao+'/5',
+    'Estado emocional geral do aluno quanto ao vestibular.','1=desmotivado, 5=extremamente motivado.');
+  // Barra motivação visual
   chk(12);const[mc1,mc2,mc3b]=s.motivacao>=4?[[209,250,229],[6,95,70],[16,185,129]]:s.motivacao>=3?[[254,243,199],[146,64,14],[245,158,11]]:[[255,228,230],[159,18,57],[244,63,94]];
-  sf(...mc1);doc.roundedRect(M,y[0],CW,10,2,2,'F');fn(7,'bold');st(...mc2);doc.text('Motivação:',M+4,y[0]+4.5);
-  const mbw2=CW-46;sf(220,228,240);doc.roundedRect(M+32,y[0]+3,mbw2,4,1,1,'F');sf(...mc3b);doc.roundedRect(M+32,y[0]+3,mbw2*s.motivacao/5,4,1,1,'F');fn(8,'bold');st(...mc2);doc.text(s.motivacao+'/5',M+CW-2,y[0]+6.5,{align:'right'});y[0]+=13;
+  sf(...mc1);doc.roundedRect(M,y[0],CW,10,2,2,'F');fn(7,'bold');st(...mc2);doc.text('Motivação atual:',M+4,y[0]+4.5);
+  const mbw2=CW-50;sf(220,228,240);doc.roundedRect(M+36,y[0]+3,mbw2,4,1,1,'F');
+  sf(...mc3b);doc.roundedRect(M+36,y[0]+3,mbw2*s.motivacao/5,4,1,1,'F');
+  fn(8,'bold');st(...mc2);doc.text(s.motivacao+'/5',M+CW-2,y[0]+6.5,{align:'right'});y[0]+=13;
+  pair('Ansiedade geral',s.ansiedadeGeral||'—','Score ansiedade',s.scoreAnsiedade?s.scoreAnsiedade+'/5':'—',
+    'Frequência de ansiedade na vida do aluno, não só nos estudos.','1=raramente, 5=ansiedade intensa quase sempre.');
+  pair('Pressão externa',s.pressaoExt||'—','Autoconfiança',s.autoconfianca||'—',
+    'Como lida com a pressão de família e escola.','O quanto acredita na própria capacidade de alcançar os objetivos.');
+  pair('Ansiedade em provas',s.ansiedadeProva||'—','Relação com erros',s.relacaoErro||'—',
+    'Como se sente momentos antes de uma avaliação.','Se transforma o erro em aprendizado ou fica travado(a).');
+  tags('Situações que dificultam os estudos',s.dificSit,'Fatores externos que impactam o rendimento — requerem abordagem sensível do mentor.');
+  full('Laudo / Diagnóstico',s.laudo||'Não informado','TDAH, dislexia, TEA e outros influenciam o método de ensino ideal para o aluno.');
 
-  // ── F: EXPECTATIVAS ──
-  sec('Expectativas da Mentoria','F');
-  tags('O que espera da mentoria',s.espera);
-  // obs
-  if(s.obs){const obsLines=doc.splitTextToSize(s.obs,CW-12);const obsH=Math.max(16,obsLines.length*4.8+10);chk(obsH+4);sf(250,251,255);doc.roundedRect(M,y[0],CW,obsH,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,obsH,'F');fn(6,'bold');st(100,116,139);doc.text('OBSERVAÇÕES DO ALUNO',M+6,y[0]+5);fn(8,'normal');st(15,27,45);obsLines.slice(0,6).forEach((l,i)=>doc.text(l,M+6,y[0]+10+i*4.8));y[0]+=obsH+4}
+  // ── G: EXPECTATIVAS ──
+  sec('Expectativas da Mentoria','G','O que o aluno espera das sessões — base para alinhar objetivos entre mentor e aluno.');
+  tags('O que espera da mentoria',s.espera,'Prioridades escolhidas pelo aluno — guiam o foco das sessões.');
+  if(s.obs){const obsLines=doc.splitTextToSize(s.obs,CW-12);const obsH=Math.max(16,obsLines.length*4.8+14);chk(obsH+4);sf(250,251,255);doc.roundedRect(M,y[0],CW,obsH,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,obsH,'F');fn(6,'bold');st(100,116,139);doc.text('OBSERVAÇÕES LIVRES DO ALUNO',M+6,y[0]+5);fn(6,'italic');st(80,100,140);doc.text('Texto escrito livremente pelo aluno — leitura obrigatória antes da primeira sessão.',M+6,y[0]+10);fn(8,'normal');st(15,27,45);obsLines.slice(0,8).forEach((l,i)=>doc.text(l,M+6,y[0]+15+i*4.8));y[0]+=obsH+4;}
 
-  // ── G: INSIGHTS ──
-  sec('Análise e Insights do Mentor','G');
+  // ── H: INSIGHTS ──
+  sec('Análise e Insights do Mentor','H','Pontos de atenção gerados automaticamente a partir das respostas. Confirme e complemente com sua análise na primeira sessão.');
   const ic2={good:{bg:[209,250,229],tx:[6,95,70],bar:[16,185,129],lb:'Positivo'},warn:{bg:[254,243,199],tx:[146,64,14],bar:[245,158,11],lb:'Atenção'},info:{bg:[237,233,254],tx:[91,33,182],bar:[124,58,237],lb:'Info'}};
-  s.insights.forEach(ins=>{const cfg=ic2[ins.type]||ic2.info;const lines=doc.splitTextToSize(ins.text,CW-30);const h=Math.max(12,lines.length*4.8+6);chk(h+4);sf(...cfg.bg);doc.roundedRect(M,y[0],CW,h,2,2,'F');sf(...cfg.bar);doc.roundedRect(M,y[0],3.5,h,2,2,'F');const bw3=doc.getTextWidth(cfg.lb)+5;sf(...cfg.bar);doc.roundedRect(M+CW-bw3-1,y[0]+1.5,bw3,5,1.5,1.5,'F');fn(6,'bold');st(255,255,255);doc.text(cfg.lb,M+CW-bw3/2-1,y[0]+4.8,{align:'center'});fn(8.5,'bold');st(...cfg.tx);doc.text(ins.icon,M+5,y[0]+h/2+1.5);fn(8,'normal');st(...cfg.tx);lines.forEach((l,i)=>doc.text(l,M+13,y[0]+6+i*4.8));y[0]+=h+4});
-  if(s.alert){chk(16);sf(255,243,199);doc.roundedRect(M,y[0],CW,14,2,2,'F');sf(245,158,11);doc.rect(M,y[0],3.5,14,'F');fn(8,'bold');st(120,53,15);doc.text('Alerta:',M+6,y[0]+6);fn(8,'normal');doc.text(doc.splitTextToSize(s.alert,CW-12)[0],M+6,y[0]+11);y[0]+=17}
+  s.insights.forEach(ins=>{const cfg=ic2[ins.type]||ic2.info;const lines=doc.splitTextToSize(ins.text,CW-30);const h=Math.max(12,lines.length*4.8+6);chk(h+4);sf(...cfg.bg);doc.roundedRect(M,y[0],CW,h,2,2,'F');sf(...cfg.bar);doc.roundedRect(M,y[0],3.5,h,2,2,'F');const bw3=doc.getTextWidth(cfg.lb)+5;sf(...cfg.bar);doc.roundedRect(M+CW-bw3-1,y[0]+1.5,bw3,5,1.5,1.5,'F');fn(6,'bold');st(255,255,255);doc.text(cfg.lb,M+CW-bw3/2-1,y[0]+4.8,{align:'center'});fn(8.5,'bold');st(...cfg.tx);doc.text(ins.icon||'•',M+5,y[0]+h/2+1.5);fn(8,'normal');st(...cfg.tx);lines.forEach((l,i)=>doc.text(l,M+13,y[0]+6+i*4.8));y[0]+=h+4;});
+  if(s.alert){chk(16);sf(255,243,199);doc.roundedRect(M,y[0],CW,14,2,2,'F');sf(245,158,11);doc.rect(M,y[0],3.5,14,'F');fn(8,'bold');st(120,53,15);doc.text('Alerta importante:',M+6,y[0]+6);fn(8,'normal');const al=doc.splitTextToSize(s.alert,CW-12);doc.text(al[0],M+6,y[0]+11);y[0]+=17;}
 
-  // ── H: PLANO ──
-  sec('Plano de Estudos Personalizado','H');
+  // ── I: PLANO ──
+  sec('Plano de Estudos Personalizado','I','Plano elaborado pelo mentor com base na análise completa das respostas do aluno.');
   sf(237,246,255);doc.roundedRect(M,y[0],CW,8,2,2,'F');fn(8,'bold');st(26,86,219);doc.text('Aluno: '+s.name+' · '+s.serie+' · Curso: '+s.curso,M+4,y[0]+5.3);y[0]+=11;
-  s.plano.forEach((p,i)=>{const lines=doc.splitTextToSize(p.texto.trim(),CW-25);const h=Math.max(11,lines.length*4.5+7);chk(h+3);const[pr,pg,pb]=hx(p.cor);sf(...(i%2===0?[248,251,255]:[243,246,255]));doc.roundedRect(M,y[0],CW,h,2,2,'F');sf(pr,pg,pb);doc.roundedRect(M,y[0],4,h,2,2,'F');sf(pr,pg,pb);doc.circle(M+11,y[0]+h/2,4,'F');fn(7,'bold');st(255,255,255);doc.text(String(i+1),M+11,y[0]+h/2,{align:'center',baseline:'middle'});fn(8.5,'bold');st(15,27,45);doc.text(p.bold,M+18,y[0]+5.5);fn(8,'normal');st(70,90,130);lines.forEach((l,li)=>doc.text(l,M+18,y[0]+10+li*4.5));y[0]+=h+3});
+  s.plano.forEach((p,i)=>{const lines=doc.splitTextToSize(p.texto.trim(),CW-25);const h=Math.max(11,lines.length*4.5+7);chk(h+3);const[pr,pg,pb]=hx(p.cor);sf(...(i%2===0?[248,251,255]:[243,246,255]));doc.roundedRect(M,y[0],CW,h,2,2,'F');sf(pr,pg,pb);doc.roundedRect(M,y[0],4,h,2,2,'F');sf(pr,pg,pb);doc.circle(M+11,y[0]+h/2,4,'F');fn(7,'bold');st(255,255,255);doc.text(String(i+1),M+11,y[0]+h/2,{align:'center',baseline:'middle'});fn(8.5,'bold');st(15,27,45);doc.text(p.bold,M+18,y[0]+5.5);fn(8,'normal');st(70,90,130);lines.forEach((l,li)=>doc.text(l,M+18,y[0]+10+li*4.5));y[0]+=h+3;});
 
   // ── FOOTER ──
   const tp=doc.internal.getNumberOfPages();
-  for(let p=1;p<=tp;p++){doc.setPage(p);sf(245,248,255);doc.rect(0,H-11,W,11,'F');sf(14,165,160);doc.rect(0,H-11,W,.8,'F');fn(6.5,'normal');st(100,116,139);doc.text('Documento confidencial — Mentoria CEPRA · Sistema de Mentoria Educacional',M,H-5);doc.text('Pág. '+p+'/'+tp,W-M,H-5,{align:'right'});fn(6.5,'bold');st(14,116,144);doc.text('CEPRA',W/2,H-5,{align:'center'})}
+  for(let pg=1;pg<=tp;pg++){
+    doc.setPage(pg);
+    sf(245,248,255);doc.rect(0,H-11,W,11,'F');sf(14,165,160);doc.rect(0,H-11,W,.8,'F');
+    fn(6.5,'normal');st(100,116,139);
+    doc.text('Documento confidencial — '+schoolName+' · Uso exclusivo da equipe de mentoria',M,H-5);
+    doc.text('Pág.'+pg+'/'+tp,W-M,H-5,{align:'right'});
+    fn(6.5,'bold');st(14,116,144);doc.text('CEPRA',W/2,H-5,{align:'center'});
+  }
   doc.save('CEPRA_'+s.name.replace(/\s+/g,'_')+'.pdf');showToast('📄 PDF exportado!','ok');
 }
 </script>
