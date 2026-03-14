@@ -230,7 +230,7 @@ kbd{background:#F1F5F9;border:1px solid #E2E8F0;border-radius:5px;padding:2px 7p
   <div class="home-wrap">
     <div class="home-eyebrow"><span></span>Sistema de Mentoria Educacional</div>
     <h1 class="home-title">Mentoria<br><em>CEPRA</em></h1>
-    <p class="home-sub">Orientação de estudos e planos personalizados para cada aluno.</p>
+    <p class="home-sub">Orientação vocacional e planos de estudo personalizados para cada aluno.</p>
     <div class="home-cards">
       <div class="hcard" onclick="startForm()">
         <div class="hcard-icon">🧑‍🎓</div>
@@ -392,19 +392,95 @@ function deleteStudent(idx){
 
 // ══════ EXPORT CSV ══════
 function exportCSV(){
-  const headers=['Nome','E-mail','WhatsApp','Nascimento','Série','Status Curso','Curso','Universidade','Quando','Áreas','Gosta','Dificil','Motivação','Sentimento','Sono (h)','Dorme','Acorda','Ambiente','Internet','Atividades','Horas Livres','Foco','Celular','Procrastinação Freq.','Score Procrast.','Autodisciplina','Score Autod.','Ansiedade Geral','Score Ansiedad.','Espera','Obj.1','Obj.2','Obj.3','Observações'];
-  const rows=students.map(s=>[
-    s.name||'',s.email||'',s.tel||'',s.nasc||'',s.serie||'',
-    s.cursoStatus||'',s.curso||'',s.univ||'',s.quando||'',
-    (s.vocacional||[]).join('; '),s.gosta||'',s.dificil||'',
-    s.motivacao||'',s.sentimento||'',s.horasSonoNum||'',
-    s.horaDorme||'',s.horaAcorda||'',s.ambiente||'',s.acesso||'',
-    (s.ativ||[]).join('; '),s.horasLivres||'',
-    s.tempoFoco||'',s.celularEstudo||'',s.procrastFreq||'',s.scoreProcrastinacao||'',
-    s.autodisciplina||'',s.scoreAutodisciplina||'',
-    s.ansiedadeGeral||'',s.scoreAnsiedade||'',
-    (s.espera||[]).join('; '),s.obj1||'',s.obj2||'',s.obj3||'',s.obs||''
-  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"'));
+  // CSV headers match the actual form questions
+  const DISC_LOCAL=['Português I','Matemática I','Matemática II','Biologia','Física I','Física II','Química I','Química II','História','História da Arte','Geografia I','Inglês','Literatura','Redação','Filosofia','Sociologia','Educação Física'];
+  const headers=[
+    // Identificação
+    'Nome Completo','E-mail','WhatsApp','Data de Nascimento','Série / Ano Escolar',
+    // Vocação
+    'Você já tem um curso ou profissão em mente?','Qual curso ou profissão?','Universidade desejada','Quando pretende fazer vestibular/ENEM','Prefere universidade pública ou privada?','Áreas de interesse',
+    // Desempenho
+    ...DISC_LOCAL.map(d=>'Nota: '+d),'Média Geral das Disciplinas',
+    'Disciplinas favoritas','Principais dificuldades',
+    'Como prefere estudar (método)?','Estilo de leitura','Frequência de simulados','Rotina de revisão',
+    // Rotina
+    'A que horas costuma dormir?','A que horas costuma acordar?','Horas de sono por noite','Qualidade do sono','Alerta de sono insuficiente',
+    'Ambiente de estudo','Acesso à internet','Dispositivos para estudar',
+    'Atividades fora da escola','Dias de esporte/academia','Horários das atividades',
+    'Como são os fins de semana?','Horas livres por semana (estimado)',
+    // Comportamento
+    'Tempo de foco sem distração','Como o celular interfere nos estudos?',
+    'Situações de procrastinação (marcadas)','Frequência de procrastinação',
+    'Como organiza os estudos (planejamento)?','Reação quando erra uma questão','Ansiedade antes de provas',
+    'Relação com erros e dificuldades','Como é a memória para conteúdos?',
+    'Nível de autodisciplina','Rede de apoio nos estudos','Materiais usados para estudar',
+    // Emocional
+    'Como se sente em relação ao futuro/vestibular?','Nível de motivação (1-5)','Ansiedade geral',
+    'Como lida com pressão de família/escola?','Autoconfiança nos estudos',
+    'Situações que dificultam os estudos','Laudo ou diagnóstico de aprendizagem',
+    // Expectativas
+    'O que espera da mentoria?','Objetivo 1 (6 meses)','Objetivo 2 (6 meses)','Objetivo 3 (6 meses)','Observações livres do aluno',
+    // Scores calculados
+    'Score Procrastinação (0-10)','Score Foco (1-5)','Score Autodisciplina (1-5)',
+    'Score Ansiedade (1-5)','Score Regulação Emocional (0-10)',
+    'Score Maturidade Vocacional (0-10)','Score Risco (0-10)',
+    'Horas estimadas livres/sem','Horas reais p/ estudo (estimado)',
+    // Tendência de área
+    'Tendência de Área do Conhecimento'
+  ];
+
+  // Área do conhecimento calculator
+  function calcAreaTendencia(s){
+    const notas=s.notas||s.disciplinas||{};
+    const grupos={
+      'Linguagens':['Português I','Literatura','Redação','Inglês'],
+      'Matemática':['Matemática I','Matemática II'],
+      'Ciências da Natureza':['Biologia','Física I','Física II','Química I','Química II'],
+      'Ciências Humanas':['História','História da Arte','Geografia I','Filosofia','Sociologia'],
+      'Artes/Corpo':['Educação Física','História da Arte']
+    };
+    const medias={};
+    Object.entries(grupos).forEach(([grupo,discs])=>{
+      const vals=discs.map(d=>Number(notas[d]||0)).filter(v=>v>0);
+      medias[grupo]=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+    });
+    const best=Object.entries(medias).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    return best.length?best[0][0]:'Não calculado';
+  }
+
+  const rows=students.map(s=>{
+    const notas=s.notas||s.disciplinas||{};
+    const media=Object.values(notas).filter(v=>Number(v)>0);
+    const mediaGeral=media.length?(media.reduce((a,b)=>Number(a)+Number(b),0)/media.length).toFixed(1):'—';
+    return [
+      s.name||'',s.email||'',s.tel||'',s.nasc||'',s.serie||'',
+      s.cursoStatus||'',s.curso||'',s.univ||'',s.quando||'',s.modeloUniv||'',
+      (s.vocacional||[]).join('; '),
+      ...DISC_LOCAL.map(d=>notas[d]||0),
+      mediaGeral,
+      (s.gostas||[s.gosta||'']).join('; '),(s.dificeis||[s.dificil||'']).join('; '),
+      (s.metodo||[]).join('; '),s.estiloLeitura||'',s.simulados||'',s.revisao||'',
+      s.horaDorme||'',s.horaAcorda||'',s.horasSonoNum||s.horasSono||'',
+      s.qualidadeSono||'',s.alertaSono?'SIM — ABAIXO DE 7H':'Ok',
+      s.ambiente||'',s.acesso||'',(s.dispositivoEstudo||[]).join('; '),
+      (s.ativ||[]).join('; '),(s.esporteDias||[]).join('; '),s.ativDesc||'',
+      s.fimDeSemana||'',s.horasLivres||'',
+      s.tempoFoco||'',s.celularEstudo||'',
+      (s.procrastinacao||[]).join('; '),s.procrastFreq||'',
+      s.planejamento||'',s.errosProva||'',s.ansiedadeProva||'',
+      s.relacaoErro||'',s.memorizacao||'',
+      s.autodisciplina||'',s.redeApoio||'',(s.materialEstudo||[]).join('; '),
+      s.sentimento||'',s.motivacao||'',s.ansiedadeGeral||'',
+      s.pressaoExt||'',s.autoconfianca||'',
+      (s.dificSit||[]).join('; '),s.laudo||'',
+      (s.espera||[]).join('; '),s.obj1||'',s.obj2||'',s.obj3||'',s.obs||'',
+      s.scoreProcrastinacao||'',s.scoreFoco||'',s.scoreAutodisciplina||'',
+      s.scoreAnsiedade||'',s.scoreRegulacaoEmocional||'',
+      s.scoreMaturidadeVocacional||'',s.scoreRisco||'',
+      s.horasEstimadas||'',s.horasReaisEstudo||'',
+      calcAreaTendencia(s)
+    ].map(v=>'"'+String(v).replace(/"/g,'""')+'"');
+  });
   const csv=[headers.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -440,16 +516,19 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;setTimeout(()=>t.className=type,3000)}
 
 // ══════ SAMPLE DATA ══════
+const _s1notas={'Português I':4,'Matemática I':3,'Matemática II':3,'Biologia':5,'Física I':2,'Física II':2,'Química I':4,'Química II':4,'História':4,'História da Arte':3,'Geografia I':4,'Inglês':3,'Literatura':3,'Redação':4,'Filosofia':3,'Sociologia':3,'Educação Física':4};
+const _s2notas={'Português I':2,'Matemática I':5,'Matemática II':5,'Biologia':3,'Física I':4,'Física II':4,'Química I':3,'Química II':3,'História':2,'História da Arte':2,'Geografia I':3,'Inglês':4,'Literatura':2,'Redação':2,'Filosofia':2,'Sociologia':3,'Educação Física':4};
+const _s3notas={'Português I':4,'Matemática I':2,'Matemática II':2,'Biologia':3,'Física I':2,'Física II':2,'Química I':2,'Química II':2,'História':5,'História da Arte':4,'Geografia I':4,'Inglês':3,'Literatura':4,'Redação':4,'Filosofia':4,'Sociologia':4,'Educação Física':3};
 const SAMPLES=[
-  {id:'s1',name:'Ana Beatriz Costa',initials:'AB',serie:'3º ano EM',escola:'Col. São Paulo',curso:'Medicina',area:'Biológicas/Saúde',email:'ana@email.com',tel:'(11) 98888-0001',nasc:'2006-03-15',cursoStatus:'Sim, tenho certeza',univ:'USP/FUVEST',quando:'Este ano',disciplinas:{Português:4,Matemática:3,Biologia:5,Física:2,Química:4,'História/Geo':4,Inglês:3},gosta:'Biologia',dificil:'Física',motivacao:4,sentimento:'Ansioso(a) mas motivado(a)',vocacional:['Biológicas/Saúde','Ciências'],schedule:{'Manhã':[0,0,1,1,0,1,1],'Tarde':[1,0,0,1,1,0,1],'Noite':[1,1,1,0,1,1,1]},atividades:[{name:'Aulas de Inglês',icon:'🌎',color:'#EDE9FE',iconColor:'#7C3AED',horario:'Seg/Qua 18h–20h',tipo:'Curso',tipoColor:'#7C3AED',tipoBg:'#EDE9FE'},{name:'Academia',icon:'💪',color:'#D1FAE5',iconColor:'#10B981',horario:'Ter/Qui 07h–08h',tipo:'Esporte',tipoColor:'#065F46',tipoBg:'#D1FAE5'}],ativ:['Esporte/Academia','Curso de idiomas'],ativDesc:'Inglês seg/qua 18h-20h, academia ter/qui 7h-8h',metodo:['Videoaulas','Exercícios/questões'],acesso:'Acesso fácil e estável',espera:['Plano de estudos organizado','Simulados e revisão'],obj1:'Passar em Medicina na FUVEST',obj2:'Subir nota em Física para 4',obj3:'Fazer 1 redação por semana',obs:'Tenho muita dificuldade em Física mas me esforço bastante!',laudo:'Não',dificSit:['Nenhuma'],alert:null,
-  insights:[{type:'good',icon:'✅',text:'Forte em Biologia e Química — base sólida para Medicina.'},{type:'warn',icon:'⚠️',text:'Física com nota baixa (2/5) — prioridade no plano de estudos.'},{type:'info',icon:'💡',text:'Motivação alta (4/5) e curso definido — foco em simulados e questões.'}],
-  plano:[{cor:'#0EA5A0',bold:'Física:',texto:' 5h semanais com exercícios comentados (FUVEST/UNICAMP)'},{cor:'#1A56DB',bold:'Matemática:',texto:' 3h semanais de reforço em funções e geometria'},{cor:'#10B981',bold:'Bio/Química:',texto:' Manter revisão semanal + resolução de provas'},{cor:'#F59E0B',bold:'Inglês:',texto:' Aproveitar curso para leitura científica'},{cor:'#7C3AED',bold:'Redação:',texto:' 1 redação/semana com correção temática ENEM'}]},
-  {id:'s2',name:'Carlos Eduardo Lima',initials:'CE',serie:'2º ano EM',escola:'E.E. Maria Auxiliadora',curso:'Engenharia de Software',area:'Tecnologia/TI',email:'carlos@email.com',tel:'(31) 97777-0002',nasc:'2007-08-22',cursoStatus:'Tenho algumas ideias',univ:'UFMG / PUC Minas',quando:'Próximo ano',disciplinas:{Português:2,Matemática:5,Biologia:3,Física:4,Química:3,'História/Geo':2,Inglês:4},gosta:'Matemática',dificil:'Português',motivacao:3,sentimento:'Indiferente por ora',vocacional:['Tecnologia/TI','Engenharias','Exatas'],schedule:{'Manhã':[0,0,0,0,0,1,1],'Tarde':[0,0,0,0,0,1,1],'Noite':[1,1,1,1,1,0,0]},atividades:[{name:'Estágio (TI)',icon:'💼',color:'#FEF3C7',iconColor:'#D97706',horario:'Seg–Sex 13h–17h',tipo:'Trabalho',tipoColor:'#92400E',tipoBg:'#FEF3C7'},{name:'Futebol',icon:'⚽',color:'#D1FAE5',iconColor:'#10B981',horario:'Sáb 09h–11h',tipo:'Esporte',tipoColor:'#065F46',tipoBg:'#D1FAE5'}],ativ:['Trabalho/Estágio','Esporte/Academia'],ativDesc:'Estágio seg-sex 13h-17h, futebol sáb 9h-11h',metodo:['Exercícios/questões','Resumos/mapas mentais'],acesso:'Acesso fácil e estável',espera:['Plano de estudos organizado','Organização de rotina'],obj1:'Não reprovar em Português',obj2:'Fazer simulado todo mês',obj3:'Melhorar redação ENEM',obs:'Fico muito cansado depois do estágio. Só consigo estudar à noite.',laudo:'Não',dificSit:['Nenhuma'],alert:'Carlos faz estágio 20h/semana — plano deve ser enxuto e focado no período noturno.',
-  insights:[{type:'good',icon:'✅',text:'Matemática e Física excelentes — ótima base para Engenharia.'},{type:'warn',icon:'⚠️',text:'Português e Humanas fracos — pode prejudicar redação no ENEM.'},{type:'info',icon:'💡',text:'Motivação média (3/5) — estratégia gamificada pode ajudar.'}],
-  plano:[{cor:'#F43F5E',bold:'Português/Redação:',texto:' 3h semanais (gramática e dissertação)'},{cor:'#F59E0B',bold:'História/Geo:',texto:' 2h semanais via mapas mentais'},{cor:'#0EA5A0',bold:'Projetos pessoais:',texto:' Reforçam motivação e currículo'},{cor:'#1A56DB',bold:'Simulados:',texto:' 1 simulado/quinzena nos fins de semana'}]},
-  {id:'s3',name:'Júlia Mendes',initials:'JM',serie:'1º ano EM',escola:'CEFET Contagem',curso:'Indecisa — explora opções',area:'Humanas',email:'julia@email.com',tel:'(31) 96666-0003',nasc:'2008-11-05',cursoStatus:'Ainda não sei',univ:'Ainda não sei',quando:'Em 2+ anos',disciplinas:{Português:4,Matemática:2,Biologia:3,Física:2,Química:2,'História/Geo':5,Inglês:3},gosta:'História',dificil:'Matemática',motivacao:2,sentimento:'Inseguro(a)',vocacional:['Humanas','Direito','Comunicação'],schedule:{'Manhã':[1,1,1,1,1,0,0],'Tarde':[0,0,0,0,0,1,1],'Noite':[0,1,0,1,0,0,0]},atividades:[{name:'Teatro',icon:'🎭',color:'#EDE9FE',iconColor:'#7C3AED',horario:'Ter/Qui 19h–21h',tipo:'Arte',tipoColor:'#5B21B6',tipoBg:'#EDE9FE'},{name:'Cuidados com irmão',icon:'🏠',color:'#FEF3C7',iconColor:'#D97706',horario:'Seg/Qua/Sex tarde',tipo:'Família',tipoColor:'#92400E',tipoBg:'#FEF3C7'}],ativ:['Teatro/Música/Arte','Cuidados familiares'],ativDesc:'Teatro ter/qui 19h-21h, cuida do irmão seg/qua/sex à tarde',metodo:['Lendo textos','Resumos/mapas mentais'],acesso:'Só pelo celular',espera:['Apoio vocacional','Apoio emocional'],obj1:'Descobrir qual curso quero fazer',obj2:'Melhorar em Matemática',obj3:'Estar mais motivada',obs:'Tenho muita ansiedade quando penso no vestibular e no futuro.',laudo:'Não',dificSit:['Saúde física/mental'],alert:'Júlia indicou ansiedade moderada. Conversa acolhedora recomendada na 1ª sessão.',
-  insights:[{type:'good',icon:'✅',text:'Excelente em Humanas e Português — perfil para Direito ou Comunicação.'},{type:'warn',icon:'⚠️',text:'Exatas muito fracas (2/5). Ainda no 1º ano — há tempo para reforço.'},{type:'info',icon:'💡',text:'Teatro desenvolve expressão oral — explorar carreiras que usem essa habilidade.'}],
-  plano:[{cor:'#7C3AED',bold:'Orientação vocacional:',texto:' 2 sessões de exploração antes de montar plano'},{cor:'#F59E0B',bold:'Matemática:',texto:' Reforço fundamental 3x/semana'},{cor:'#10B981',bold:'Humanas/Redação:',texto:' Manter e aprofundar — grande diferencial'},{cor:'#0EA5A0',bold:'Autoconhecimento:',texto:' Quiz vocacional + visita a cursos/profissionais'}]}
+{id:'s1',name:'Ana Beatriz Costa',initials:'AB',serie:'3º ano EM',escola:'',curso:'Medicina',area:'Biológicas/Saúde',email:'ana@email.com',tel:'(11) 98888-0001',nasc:'2006-03-15',cursoStatus:'Sim, tenho certeza',univ:'USP/FUVEST',quando:'Este ano (menos de 12 meses)',modeloUniv:'Publica — foco principal',notas:_s1notas,disciplinas:_s1notas,gostas:['Biologia','Quimica I'],dificeis:['Fisica I','Fisica II'],gosta:'Biologia',dificil:'Fisica I',motivacao:4,sentimento:'Ansioso(a) mas motivado(a)',vocacional:['Biologicas/Saude','Ciencias'],schedule:{'Manhã':[0,0,0,0,0,1,1],'Tarde':[1,0,0,1,1,0,1],'Noite':[1,1,1,0,1,1,1]},atividades:[{name:'Ingles',icon:'*',color:'#EDE9FE',iconColor:'#7C3AED',horario:'Seg/Qua 18h-20h',tipo:'Curso',tipoColor:'#7C3AED',tipoBg:'#EDE9FE'},{name:'Academia',icon:'*',color:'#D1FAE5',iconColor:'#10B981',horario:'Ter/Qui 07h-08h',tipo:'Esporte',tipoColor:'#065F46',tipoBg:'#D1FAE5'}],ativ:['Esporte / academia','Curso de idiomas'],ativDesc:'Ingles seg/qua 18h-20h, academia ter/qui 7h-8h',esporteDias:['Terca','Quinta'],metodo:['Assistindo videoaulas','Resolvendo exercicios e questoes'],estiloLeitura:'Releio as partes dificeis',simulados:'Algumas vezes por semana',revisao:'Reviso antes das provas',acesso:'Wi-Fi estavel em casa',dispositivoEstudo:['Notebook/Laptop'],horaDorme:'Entre 23h e meia-noite',horaAcorda:'Entre 5h30 e 6h',horasSono:6,horasSonoNum:6,qualidadeSono:'Durmo mas nao acordo bem',alertaSono:true,ambiente:'Tenho espaco proprio e silencioso',fimDeSemana:'Tenho compromissos, mas sobra tempo',horasLivres:'Entre 10 e 15 horas',horasEstimadas:12,horasReaisEstudo:9,tempoFoco:'Entre 45 min e 1 hora',celularEstudo:'Confiro vez ou outra, mas estudo bem',procrastinacao:['Comeco a estudar mas paro logo'],procrastFreq:'As vezes',scoreProcrastinacao:3,planejamento:'Planejo no comeco da semana',errosProva:'Analiso o erro e busco entender',ansiedadeProva:'Muito ansioso(a), prejudica meu desempenho',relacaoErro:'Aceito mas prefiro nao lembrar',memorizacao:'Memorizo rapido e retenho bem',autodisciplina:'Boa — cumpro a maioria dos planos',scoreAutodisciplina:4,scoreFoco:4,scoreAnsiedade:2,scoreRegulacaoEmocional:7,scoreMaturidadeVocacional:9,scoreRisco:3,redeApoio:'Tenho familia que me apoia muito',materialEstudo:['Apostila da escola','Resolucao de provas anteriores'],ansiedadeGeral:'As vezes, mas controlo bem',pressaoExt:'Sinto pressao mas lido bem',autoconfianca:'Boa — confio em mim na maioria das vezes',espera:['Plano de estudos organizado','Simulados e revisao'],disponMentoria:'A cada 15 dias',formatoMentoria:'Online',obj1:'Passar em Medicina na FUVEST',obj2:'Subir nota em Fisica para 4',obj3:'Fazer 1 redacao por semana',obs:'Tenho muita dificuldade em Fisica mas me esforco bastante!',laudo:'Nao tenho diagnostico',dificSit:['Nenhuma dificuldade especifica'],alert:'Ana dorme apenas 6h/noite — sono insuficiente.',
+insights:[{type:'good',icon:'+',text:'Forte em Biologia — base solida para Medicina.'},{type:'warn',icon:'!',text:'Fisica baixa (2/5) — prioridade no plano.'},{type:'warn',icon:'!',text:'Dorme 6h/noite — abaixo do recomendado.'},{type:'good',icon:'+',text:'Motivacao alta (4/5) e curso definido.'}],
+plano:[{cor:'#0EA5A0',bold:'Fisica:',texto:' 5h semanais com exercicios comentados (FUVEST)'},{cor:'#1A56DB',bold:'Matematica:',texto:' 3h semanais de reforco'},{cor:'#10B981',bold:'Bio/Quimica:',texto:' Manter revisao semanal'},{cor:'#F59E0B',bold:'Sono:',texto:' Dormir 22h30 — minimo 7h/noite'},{cor:'#7C3AED',bold:'Redacao:',texto:' 1 redacao/semana ENEM'}]},
+{id:'s2',name:'Carlos Eduardo Lima',initials:'CE',serie:'2 ano EM',escola:'',curso:'Engenharia de Software',area:'Tecnologia/TI',email:'carlos@email.com',tel:'(31) 97777-0002',nasc:'2007-08-22',cursoStatus:'Tenho algumas ideias',univ:'UFMG / PUC Minas',quando:'Proximo ano',modeloUniv:'Tanto faz, quero o melhor curso',notas:_s2notas,disciplinas:_s2notas,gostas:['Matematica I','Fisica I'],dificeis:['Portugues I','Redacao'],gosta:'Matematica I',dificil:'Portugues I',motivacao:3,sentimento:'Indiferente por enquanto',vocacional:['Tecnologia/TI','Engenharias'],schedule:{'Manhã':[0,0,0,0,0,1,1],'Tarde':[0,0,0,0,0,1,1],'Noite':[1,1,1,1,1,0,0]},atividades:[{name:'Estagio TI',icon:'*',color:'#FEF3C7',iconColor:'#D97706',horario:'Seg-Sex 13h-17h',tipo:'Trabalho',tipoColor:'#92400E',tipoBg:'#FEF3C7'},{name:'Futebol',icon:'*',color:'#D1FAE5',iconColor:'#10B981',horario:'Sab 09h-11h',tipo:'Esporte',tipoColor:'#065F46',tipoBg:'#D1FAE5'}],ativ:['Trabalho ou estagio','Esporte / academia'],ativDesc:'Estagio seg-sex 13h-17h, futebol sab 9h-11h',esporteDias:['Sabado'],metodo:['Resolvendo exercicios e questoes','Fazendo resumos e mapas mentais'],estiloLeitura:'Faco resumo depois de ler',simulados:'Uma vez por semana',revisao:'Reviso quando lembro',acesso:'Wi-Fi estavel em casa',dispositivoEstudo:['Celular','Notebook/Laptop'],horaDorme:'Entre 23h e meia-noite',horaAcorda:'Entre 6h e 6h30',horasSono:7,horasSonoNum:7,qualidadeSono:'Durmo bem e acordo descansado(a)',alertaSono:false,ambiente:'Estudo na sala, com barulho as vezes',fimDeSemana:'Trabalho ou estagio no fim de semana',horasLivres:'Entre 5 e 10 horas',horasEstimadas:7,horasReaisEstudo:4,tempoFoco:'Entre 30 e 45 minutos',celularEstudo:'Interrompe muito, mas nao consigo largar',procrastinacao:['Deixo para estudar na vespera da prova'],procrastFreq:'Frequentemente',scoreProcrastinacao:6,planejamento:'So estudo perto de provas',errosProva:'Fico chateado(a) mas sigo em frente',ansiedadeProva:'Um pouco ansioso(a), mas controlado',relacaoErro:'Aceito mas prefiro nao lembrar',memorizacao:'Memorizo mas esqueco rapido',autodisciplina:'Media — depende muito do meu humor',scoreAutodisciplina:3,scoreFoco:3,scoreAnsiedade:2,scoreRegulacaoEmocional:6,scoreMaturidadeVocacional:6,scoreRisco:5,redeApoio:'As vezes estudo com colegas',materialEstudo:['Plataformas online (YouTube, Descomplica)','Resolucao de provas anteriores'],ansiedadeGeral:'As vezes, mas controlo bem',pressaoExt:'A pressao me motiva',autoconfianca:'Oscila muito dependendo do dia',espera:['Plano de estudos organizado','Organizacao de rotina semanal'],disponMentoria:'1x por semana',formatoMentoria:'Online',obj1:'Nao reprovar em Portugues',obj2:'Fazer simulado todo mes',obj3:'Melhorar redacao ENEM',obs:'Fico muito cansado depois do estagio. So consigo estudar a noite.',laudo:'Nao tenho diagnostico',dificSit:['Nenhuma dificuldade especifica'],alert:'Carlos faz estagio 20h/semana — plano enxuto, foco noturno.',
+insights:[{type:'good',icon:'+',text:'Matematica e Fisica excelentes — base para Engenharia.'},{type:'warn',icon:'!',text:'Portugues e Humanas fracos — redacao ENEM em risco.'},{type:'warn',icon:'!',text:'Procrastinacao frequente (6/10) — estrategias de foco urgentes.'},{type:'info',icon:'i',text:'Motivacao media (3/5) — abordagem gamificada pode ajudar.'}],
+plano:[{cor:'#F43F5E',bold:'Portugues/Redacao:',texto:' 3h semanais (gramatica e dissertacao)'},{cor:'#F59E0B',bold:'Historia/Humanas:',texto:' 2h semanais via mapas mentais'},{cor:'#0EA5A0',bold:'Projetos pessoais:',texto:' Reforcam motivacao e curriculo'},{cor:'#1A56DB',bold:'Simulados:',texto:' 1 simulado/quinzena nos fins de semana'}]},
+{id:'s3',name:'Julia Mendes',initials:'JM',serie:'1 ano EM',escola:'',curso:'Direito ou Comunicacao',area:'Humanas',email:'julia@email.com',tel:'(31) 96666-0003',nasc:'2008-11-05',cursoStatus:'Sei a area, mas nao o curso',univ:'Ainda nao sei',quando:'Em 2 anos ou mais',modeloUniv:'Ainda nao pensei nisso',notas:_s3notas,disciplinas:_s3notas,gostas:['Historia','Literatura','Redacao'],dificeis:['Matematica I','Fisica I'],gosta:'Historia',dificil:'Matematica I',motivacao:2,sentimento:'Inseguro(a) sobre o que escolher',vocacional:['Humanas','Direito','Comunicacao/Midia'],schedule:{'Manhã':[0,0,0,0,0,0,0],'Tarde':[0,0,0,0,0,1,1],'Noite':[0,1,0,1,0,0,0]},atividades:[{name:'Teatro',icon:'*',color:'#EDE9FE',iconColor:'#7C3AED',horario:'Ter/Qui 19h-21h',tipo:'Arte',tipoColor:'#5B21B6',tipoBg:'#EDE9FE'},{name:'Cuidados irmao',icon:'*',color:'#FEF3C7',iconColor:'#D97706',horario:'Seg/Qua/Sex tarde',tipo:'Familia',tipoColor:'#92400E',tipoBg:'#FEF3C7'}],ativ:['Teatro / musica / arte','Cuidados com familia ou irmaos'],ativDesc:'Teatro ter/qui 19h-21h, cuida do irmao seg/qua/sex tarde',esporteDias:[],metodo:['Lendo textos e apostilas','Fazendo resumos e mapas mentais'],estiloLeitura:'Sublinho ou anoto enquanto leio',simulados:'Raramente ou nunca',revisao:'Reviso quando lembro',acesso:'So dados moveis do celular',dispositivoEstudo:['Celular'],horaDorme:'Entre 22h e 23h',horaAcorda:'Entre 6h30 e 7h',horasSono:7,horasSonoNum:7,qualidadeSono:'Tenho dificuldade para adormecer',alertaSono:false,ambiente:'Divido quarto e e dificil concentrar',fimDeSemana:'Tenho compromissos, mas sobra tempo',horasLivres:'Menos de 5 horas',horasEstimadas:3,horasReaisEstudo:2,tempoFoco:'Entre 30 e 45 minutos',celularEstudo:'Confiro vez ou outra, mas estudo bem',procrastinacao:['Deixo para estudar na vespera da prova','Comeco a estudar mas paro logo'],procrastFreq:'Frequentemente',scoreProcrastinacao:6,planejamento:'Estudo o que achar necessario no dia',errosProva:'Desanimo bastante quando erro muito',ansiedadeProva:'Muito ansioso(a), prejudica meu desempenho',relacaoErro:'Me sinto inadequado(a) quando erro',memorizacao:'Preciso repetir varias vezes para fixar',autodisciplina:'Baixa — preciso de alguem me cobrando',scoreAutodisciplina:2,scoreFoco:3,scoreAnsiedade:3,scoreRegulacaoEmocional:4,scoreMaturidadeVocacional:5,scoreRisco:7,redeApoio:'Estudo sozinho(a) e me sinto desapoiado(a)',materialEstudo:['Apostila da escola'],ansiedadeGeral:'Frequentemente, afeta meu dia a dia',pressaoExt:'A pressao me paralisa as vezes',autoconfianca:'Baixa — tenho muitas duvidas sobre mim',espera:['Apoio vocacional','Apoio emocional e motivacao'],disponMentoria:'1x por semana',formatoMentoria:'Tanto faz',obj1:'Descobrir qual curso quero fazer',obj2:'Melhorar em Matematica',obj3:'Estar mais motivada',obs:'Tenho muita ansiedade quando penso no vestibular e no futuro.',laudo:'Nao tenho diagnostico',dificSit:['Saude mental (ansiedade, depressao)'],alert:'Julia indicou ansiedade moderada — acompanhamento prioritario. Risco: 7/10.',
+insights:[{type:'good',icon:'+',text:'Forte em Humanas e Portugues — perfil para Direito ou Comunicacao.'},{type:'warn',icon:'!',text:'Exatas fracas (2/5) — reforco fundamental necessario.'},{type:'warn',icon:'!',text:'Score de risco elevado (7/10) — acompanhamento prioritario.'},{type:'info',icon:'i',text:'Teatro desenvolve expressao oral — explorar carreiras relacionadas.'}],
+plano:[{cor:'#7C3AED',bold:'Orientacao vocacional:',texto:' 2 sessoes de exploracao antes de montar plano'},{cor:'#F59E0B',bold:'Matematica:',texto:' Reforco fundamental 3x/semana'},{cor:'#10B981',bold:'Humanas/Redacao:',texto:' Manter e aprofundar — grande diferencial'},{cor:'#0EA5A0',bold:'Autoconhecimento:',texto:' Quiz vocacional + visita a cursos/profissionais'}]}
 ];
 let students=[...SAMPLES];
 let curStu=0;
@@ -821,34 +900,61 @@ async function submitForm(){
   const initials=nome.trim().split(' ').filter(Boolean).map(n=>n[0]).slice(0,2).join('').toUpperCase();
   const notas=formData.notas||{};
 
-  // Build auto-insights based on scores
+  // Build full disciplinas from all 17 DISC
+  const disciplinasObj={};
+  DISC.forEach(d=>{disciplinasObj[d]=notas[d]||0;});
+
+  // New scores
+  const emRegMap={
+    ansiedadeGeral:{'Raramente me sinto ansioso(a)':5,'Às vezes, mas controlo bem':4,'Frequentemente, afeta meu dia a dia':2,'Muito frequentemente, é difícil lidar':1,'Sinto ansiedade intensa quase sempre':0},
+    relacaoErro:{'Vejo como oportunidade de aprender':5,'Aceito mas prefiro não lembrar':3,'Me sinto inadequado(a) quando erro':2,'Erro me faz querer desistir às vezes':1,'Tenho dificuldade enorme de lidar com erros':0},
+    pressaoExt:{'Minha família é apoio, não pressão':5,'Sinto pressão mas lido bem':4,'A pressão me motiva':4,'A pressão me paralisa às vezes':2,'A pressão é excessiva e me faz mal':0}
+  };
+  const rEm=(emRegMap.ansiedadeGeral[formData.ansiedadeGeral]??2)+(emRegMap.relacaoErro[formData.relacaoErro]??2)+(emRegMap.pressaoExt[formData.pressaoExt]??3);
+  formData.scoreRegulacaoEmocional=Math.min(10,Math.round(rEm*10/15));
+  const vmi=(formData.cursoStatus==='Sim, tenho certeza'?4:formData.cursoStatus==='Tenho algumas ideias'?2:1)
+    +(formData.cursoNome&&formData.cursoNome.length>2?2:0)
+    +((formData.areas||[]).length>=2?2:1)
+    +(formData.univ&&formData.univ.length>1?1:0)
+    +(formData.quando&&formData.quando!=='Ainda não sei'?1:0);
+  formData.scoreMaturidadeVocacional=Math.min(10,vmi);
+  const risco=((5-parseInt(formData.motivacao||3))*1.2)+(formData.scoreProcrastinacao*0.4)+((formData.dificSit||[]).filter(d=>d!=='Nenhuma dificuldade específica').length*0.8)+(formData.scoreAnsiedade*0.6)+(formData.alertaSono?1.5:0);
+  formData.scoreRisco=Math.min(10,Math.round(risco));
+  const horasBase=formData.horasEstimadas||7;
+  const ativHours=(formData.ativ||[]).filter(a=>a!=='Nenhuma').length*1.5;
+  formData.horasReaisEstudo=Math.max(1,Math.round(horasBase-ativHours));
+
+  // Build auto-insights (no emoji icons - jsPDF can't render them)
   const autoInsights=[];
   const vals=Object.values(notas).filter(v=>v>0);
   const media=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
   const melhor=Object.entries(notas).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])[0];
   const pior=Object.entries(notas).filter(([,v])=>v>0).sort((a,b)=>a[1]-b[1])[0];
-  if(melhor&&melhor[1]>=4)autoInsights.push({type:'good',icon:'✅',text:`Destaque em ${melhor[0]} (${melhor[1]}/5) — ponto forte a explorar.`});
-  if(pior&&pior[1]<=2)autoInsights.push({type:'warn',icon:'⚠️',text:`${pior[0]} precisa de atenção (${pior[1]}/5) — prioridade no plano.`});
-  if(formData.scoreProcrastinacao>=6)autoInsights.push({type:'warn',icon:'⚠️',text:`Nível de procrastinação elevado (${formData.scoreProcrastinacao}/10) — estratégias de foco são essenciais.`});
-  if(formData.alertaSono)autoInsights.push({type:'warn',icon:'😴',text:`Dorme apenas ${sonoH}h por noite — abaixo do recomendado. Pode afetar memória e concentração.`});
-  if(formData.scoreAnsiedade>=4)autoInsights.push({type:'warn',icon:'💬',text:'Ansiedade elevada detectada — apoio emocional deve ser parte do plano.'});
-  if(formData.scoreAutodisciplina>=4)autoInsights.push({type:'good',icon:'✅',text:'Boa autodisciplina — capaz de seguir cronograma com autonomia.'});
-  if(autoInsights.length===0)autoInsights.push({type:'info',icon:'📋',text:`Anamnese de ${nome} recebida. Plano em elaboração pelo mentor.`});
+  if(melhor&&melhor[1]>=4)autoInsights.push({type:'good',icon:'+',text:`Destaque em ${melhor[0]} (${melhor[1]}/5) — ponto forte a explorar.`});
+  if(pior&&pior[1]<=2)autoInsights.push({type:'warn',icon:'!',text:`${pior[0]} precisa de atencao (${pior[1]}/5) — prioridade no plano.`});
+  if(formData.scoreProcrastinacao>=6)autoInsights.push({type:'warn',icon:'!',text:`Procrastinacao elevada (${formData.scoreProcrastinacao}/10) — estrategias de foco sao essenciais.`});
+  if(formData.alertaSono)autoInsights.push({type:'warn',icon:'!',text:`Dorme apenas ${sonoH}h por noite — abaixo do recomendado. Afeta memoria e concentracao.`});
+  if(formData.scoreAnsiedade>=4)autoInsights.push({type:'warn',icon:'!',text:'Ansiedade elevada detectada — apoio emocional deve ser parte do plano.'});
+  if(formData.scoreAutodisciplina>=4)autoInsights.push({type:'good',icon:'+',text:'Boa autodisciplina — capaz de seguir cronograma com autonomia.'});
+  if(formData.scoreRisco>=7)autoInsights.push({type:'warn',icon:'!',text:`Score de risco elevado (${formData.scoreRisco}/10) — este aluno precisa de acompanhamento mais proximo.`});
+  if(formData.scoreMaturidadeVocacional<=4)autoInsights.push({type:'info',icon:'i',text:`Maturidade vocacional baixa (${formData.scoreMaturidadeVocacional}/10) — priorizar sessoes de autoconhecimento e exploracao de carreiras.`});
+  if(autoInsights.length===0)autoInsights.push({type:'info',icon:'i',text:`Anamnese de ${nome} recebida. Plano em elaboracao pelo mentor.`});
 
   students.unshift({
     id:'new'+Date.now(),name:nome,initials,
-    serie:formData.serie||'—',escola:formData.escola||'—',
+    serie:formData.serie||'—',escola:'',
     curso:formData.cursoNome||'A definir',area:(formData.areas||['—'])[0]||'—',
     email:formData.email||'—',tel:formData.tel||'—',nasc:formData.nasc||'—',
     cursoStatus:formData.cursoStatus||'—',univ:formData.univ||'—',
     quando:formData.quando||'—',modeloUniv:formData.modeloUniv||'—',
-    disciplinas:{Português:notas['Português/Redação']||0,Matemática:notas['Matemática']||0,Biologia:notas['Biologia']||0,Física:notas['Física']||0,Química:notas['Química']||0,'História/Geo':notas['História/Geo']||0,Inglês:notas['Inglês']||0},
-    gosta:formData.gosta||'—',dificil:formData.dificil||'—',
+    notas:disciplinasObj,disciplinas:disciplinasObj,
+    gostas:formData.gostas||[],gosta:formData.gosta||'—',
+    dificeis:formData.dificeis||[],dificil:formData.dificil||'—',
     motivacao:parseInt(formData.motivacao)||3,
     sentimento:formData.sentimento||'—',
     vocacional:formData.areas||[],
     schedule:formData.schedule||{'Manhã':[0,0,0,0,0,0,0],'Tarde':[0,0,0,0,0,0,0],'Noite':[0,0,0,0,0,0,0]},
-    atividades:(formData.ativ||[]).filter(a=>a!=='Nenhuma').map(a=>({name:a,icon:'📌',color:'#F0F4FA',iconColor:'#1A56DB',horario:formData.ativDesc||'',tipo:a,tipoColor:'#1A56DB',tipoBg:'#EFF6FF'})),
+    atividades:(formData.ativ||[]).filter(a=>a!=='Nenhuma').map(a=>({name:a,icon:'*',color:'#F0F4FA',iconColor:'#1A56DB',horario:formData.ativDesc||'',tipo:a,tipoColor:'#1A56DB',tipoBg:'#EFF6FF'})),
     ativ:formData.ativ||[],ativDesc:formData.ativDesc||'',esporteDias:formData.esporteDias||[],
     metodo:formData.metodo||[],estiloLeitura:formData.estiloLeitura||'—',
     simulados:formData.simulados||'—',revisao:formData.revisao||'—',
@@ -858,6 +964,7 @@ async function submitForm(){
     qualidadeSono:formData.qualidadeSono||'—',alertaSono:formData.alertaSono||false,
     ambiente:formData.ambiente||'—',fimDeSemana:formData.fimDeSemana||'—',
     horasLivres:formData.horasLivres||'—',horasEstimadas:formData.horasEstimadas||7,
+    horasReaisEstudo:formData.horasReaisEstudo||5,
     tempoFoco:formData.tempoFoco||'—',celularEstudo:formData.celularEstudo||'—',
     procrastinacao:formData.procrastinacao||[],procrastFreq:formData.procrastFreq||'—',
     scoreProcrastinacao:formData.scoreProcrastinacao||5,
@@ -866,6 +973,9 @@ async function submitForm(){
     memorizacao:formData.memorizacao||'—',autodisciplina:formData.autodisciplina||'—',
     scoreAutodisciplina:formData.scoreAutodisciplina||3,
     scoreFoco:formData.scoreFoco||3,scoreAnsiedade:formData.scoreAnsiedade||2,
+    scoreRegulacaoEmocional:formData.scoreRegulacaoEmocional||5,
+    scoreMaturidadeVocacional:formData.scoreMaturidadeVocacional||5,
+    scoreRisco:formData.scoreRisco||3,
     redeApoio:formData.redeApoio||'—',materialEstudo:formData.materialEstudo||[],
     ansiedadeGeral:formData.ansiedadeGeral||'—',pressaoExt:formData.pressaoExt||'—',
     autoconfianca:formData.autoconfianca||'—',
@@ -888,165 +998,227 @@ function renderDash(s){
   const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],ps=['Manhã','Tarde','Noite'];
   const tot=Object.values(s.schedule).flat().filter(x=>x).length;
   const mc=s.motivacao>=4?'#10B981':s.motivacao>=3?'#F59E0B':'#F43F5E';
-  const ml=s.motivacao>=4?'🔥 Alta':s.motivacao>=3?'⚡ Moderada':'😔 Baixa — atenção';
+  const ml=s.motivacao>=4?'Alta':s.motivacao>=3?'Moderada':'Baixa — atencao';
+  const motivDesc={1:'Muito desmotivado',2:'Desmotivado',3:'Motivacao moderada',4:'Bem motivado',5:'Muito motivado'}[s.motivacao]||'—';
 
-  // Scores
   const scoreProc=s.scoreProcrastinacao||5;
   const scoreFoco=s.scoreFoco||3;
   const scoreAuto=s.scoreAutodisciplina||3;
   const scoreAnx=s.scoreAnsiedade||2;
+  const scoreReg=s.scoreRegulacaoEmocional||5;
+  const scoreVoc=s.scoreMaturidadeVocacional||5;
+  const scoreRisco=s.scoreRisco||3;
+
   const procColor=scoreProc<=3?'#10B981':scoreProc<=6?'#F59E0B':'#F43F5E';
   const focoColor=scoreFoco>=4?'#10B981':scoreFoco>=3?'#F59E0B':'#F43F5E';
   const autoColor=scoreAuto>=4?'#10B981':scoreAuto>=3?'#F59E0B':'#F43F5E';
   const anxColor=scoreAnx<=2?'#10B981':scoreAnx<=3?'#F59E0B':'#F43F5E';
+  const regColor=scoreReg>=7?'#10B981':scoreReg>=4?'#F59E0B':'#F43F5E';
+  const vocColor=scoreVoc>=7?'#10B981':scoreVoc>=4?'#F59E0B':'#F43F5E';
+  const riscoColor=scoreRisco<=3?'#10B981':scoreRisco<=6?'#F59E0B':'#F43F5E';
 
-  // Rich rotina grid — 24 slots per day (hours 5h–24h+), showing blocks
-  function rotinaGrid(){
-    const HOURS=['5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','0h','1h','2h'];
-    const DAYS_SHORT=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-    // Build cell states: 'escola'|'livre'|'ativ'|'sono'|'neutro'
-    const dormMap={'Antes das 20h':15,'Entre 20h e 21h':15,'Entre 21h e 22h':16,'Entre 22h e 23h':17,'Entre 23h e meia-noite':18,'Entre 0h e 1h':19,'Entre 1h e 2h':20,'Entre 2h e 3h':21,'Entre 3h e 4h':22,'Depois das 4h (virada)':23};
-    const acorMap={'Antes das 5h':0,'Entre 5h e 5h30':0,'Entre 5h30 e 6h':1,'Entre 6h e 6h30':1,'Entre 6h30 e 7h':2,'Depois das 7h':2};
-    const dormH=dormMap[s.horaDorme]||17; // hour index in HOURS arr (17=22h)
-    const acorH=acorMap[s.horaAcorda]||1; // 0=5h, 1=6h, 2=7h
-
-    // grid: days × hours
-    const grid=Array(7).fill(null).map(()=>Array(HOURS.length).fill('neutro'));
-    for(let d=0;d<7;d++){
-      for(let h=0;h<HOURS.length;h++){
-        // Escola manhã seg-sex: 7h–12h = indices 2..6
-        if(d<5&&h>=2&&h<=6){grid[d][h]='escola';continue;}
-        // Sono: de dormH até acorH (crossing midnight handled)
-        let isSono=false;
-        if(dormH>acorH){isSono=h>=dormH||h<=acorH;}
-        else{isSono=h>=dormH&&h<=acorH;}
-        if(isSono){grid[d][h]='sono';continue;}
-        // Atividades (tarde = 12..17, noite = 17..22)
-        const hasTarde=(s.schedule&&(s.schedule['Tarde']||[])[d]);
-        const hasNoite=(s.schedule&&(s.schedule['Noite']||[])[d]);
-        if(hasTarde&&h>=6&&h<=10){grid[d][h]='livre';continue;}
-        if(hasNoite&&h>=13&&h<=17){grid[d][h]='livre';continue;}
-        // sport days
-        const dayNames=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
-        if((s.esporteDias||[]).includes(dayNames[d])&&h>=13&&h<=15){grid[d][h]='ativ';continue;}
-        // weekend
-        if(d>=5&&h>=4&&h<=12){grid[d][h]='livre';}
-      }
-    }
-    const LEGENDS=[{c:'#0EA5A0',l:'Livre p/ estudo'},{c:'#0F1B2D',l:'Escola'},{c:'#7C3AED',l:'Sono'},{c:'#F59E0B',l:'Atividade'},{c:'#E2E8F0',l:'Sem info'}];
-    const COLORS={escola:'#0F1B2D',sono:'#7C3AED',ativ:'#F59E0B',livre:'#0EA5A0',neutro:'#F1F5F9'};
-    const TCOLORS={escola:'#fff',sono:'#fff',ativ:'#fff',livre:'#fff',neutro:'#CBD5E1'};
-    let html=`<div style="overflow-x:auto;margin-bottom:8px"><table style="border-collapse:collapse;font-size:.68rem;min-width:500px;width:100%">`;
-    html+=`<tr><th style="padding:3px 5px;color:var(--ink3);font-weight:600;text-align:left;min-width:32px"></th>`;
-    HOURS.forEach(h=>html+=`<th style="padding:2px 1px;color:var(--ink3);font-weight:600;text-align:center;font-size:.6rem">${h}</th>`);
-    html+=`</tr>`;
-    DAYS_SHORT.forEach((day,d)=>{
-      html+=`<tr><td style="padding:3px 6px 3px 0;font-weight:600;color:var(--ink2);white-space:nowrap">${day}</td>`;
-      grid[d].forEach((state,h)=>{
-        const bg=COLORS[state];const tc=TCOLORS[state];
-        html+=`<td style="width:${100/HOURS.length}%;height:20px;background:${bg};border-radius:3px;margin:1px;padding:0" title="${HOURS[h]} ${day}: ${state}"></td>`;
-      });
-      html+=`</tr>`;
-    });
-    html+=`</table></div>`;
-    html+=`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">`;
-    LEGENDS.forEach(l=>html+=`<div style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--ink3)"><div style="width:10px;height:10px;border-radius:2px;background:${l.c}"></div>${l.l}</div>`);
-    html+=`</div>`;
-    return html;
-  }
-
-  // Scores mini-widget
   function scoreMini(label,val,max,color,desc){
     const pct=Math.round((val/max)*100);
-    return `<div style="margin-bottom:10px">
+    return `<div style="margin-bottom:11px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
         <span style="font-size:.82rem;font-weight:600;color:var(--ink2)">${label}</span>
         <span style="font-size:.82rem;font-weight:700;color:${color}">${val}/${max}</span>
       </div>
       <div style="height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width .5s"></div>
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:3px"></div>
       </div>
       <div style="font-size:.72rem;color:var(--ink3);margin-top:2px">${desc}</div>
     </div>`;
   }
 
-  const hm='<div class="hm"><div class="hm-h"></div>'+days.map(d=>`<div class="hm-h">${d}</div>`).join('')+ps.map(p=>`<div class="hm-lb">${p}</div>`+(s.schedule[p]||[0,0,0,0,0,0,0]).map(v=>`<div class="hm-cell ${v?'on':'off'}">${v?'✓':''}</div>`).join('')).join('')+'</div>';
+  // Área do conhecimento tendency
+  function calcAreaTendencia(notas){
+    const grupos={
+      'Linguagens':['Português I','Literatura','Redação','Inglês'],
+      'Matemática':['Matemática I','Matemática II'],
+      'Ciências da Natureza':['Biologia','Física I','Física II','Química I','Química II'],
+      'Ciências Humanas':['História','História da Arte','Geografia I','Filosofia','Sociologia'],
+      'Artes & Corpo':['Educação Física','História da Arte']
+    };
+    const medias={};
+    Object.entries(grupos).forEach(([g,discs])=>{
+      const vals=discs.map(d=>Number(notas[d]||0)).filter(v=>v>0);
+      medias[g]=vals.length?Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*10)/10:0;
+    });
+    return Object.entries(medias).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  }
+  const notasObj=s.notas||s.disciplinas||{};
+  const areaTend=calcAreaTendencia(notasObj);
+  const areaPrincipal=areaTend.length?areaTend[0][0]:'Não calculado';
 
-  const sonoAlertHtml=s.alertaSono?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:8px 12px;font-size:.82rem;color:#92400E;margin-bottom:12px">😴 <strong>Sono insuficiente:</strong> ${s.horasSonoNum||'?'}h/noite — mínimo recomendado: 7h</div>`:'';
+  function areaTendenciaCard(){
+    const CORES={'Linguagens':'#7C3AED','Matemática':'#1A56DB','Ciências da Natureza':'#0EA5A0','Ciências Humanas':'#F59E0B','Artes & Corpo':'#F43F5E'};
+    const DESCS={'Linguagens':'Facilidade com leitura, escrita e comunicação','Matemática':'Aptidão para raciocínio lógico e abstrato','Ciências da Natureza':'Afinidade com biologia, química e física','Ciências Humanas':'Interesse em história, filosofia e sociedade','Artes & Corpo':'Expressão artística e movimento'};
+    if(!areaTend.length)return '<p style="color:var(--ink3);font-size:.85rem">Avalie as disciplinas para ver a tendência.</p>';
+    return areaTend.map(([g,m],i)=>{
+      const cor=CORES[g]||'#64748B';
+      const pct=Math.round(m*20);
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <span style="font-size:.84rem;font-weight:${i===0?700:500};color:${i===0?cor:'var(--ink2)'}">${i===0?'⭐ ':''} ${g}</span>
+          <span style="font-size:.82rem;font-weight:700;color:${cor}">${m}/5</span>
+        </div>
+        <div style="height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${cor};border-radius:4px"></div>
+        </div>
+        ${i===0?`<div style="font-size:.72rem;color:${cor};margin-top:2px">${DESCS[g]||''}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  const notaEntries=Object.entries(notasObj).filter(([,v])=>Number(v)>=0);
+  function discBars(){
+    return `<div style="display:flex;flex-direction:column;gap:5px">
+      ${notaEntries.map(([d,v])=>{
+        const nv=Number(v)||0;
+        const col=nv>=4?'#10B981':nv>=3?'#F59E0B':nv>0?'#F43F5E':'#E2E8F0';
+        const pct=nv*20;
+        return `<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.72rem;color:var(--ink2);width:110px;flex-shrink:0;text-align:right">${d}</span>
+          <div style="flex:1;height:14px;background:#F1F5F9;border-radius:4px;overflow:hidden;position:relative">
+            <div style="height:100%;width:${pct}%;background:${col};border-radius:4px;transition:width .4s"></div>
+          </div>
+          <span style="font-size:.72rem;font-weight:700;color:${col};width:24px">${nv>0?nv+'/5':'—'}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // Rotina grid
+  function rotinaGrid(){
+    const HOURS=['5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','0h','1h','2h'];
+    const DAYS_SHORT=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+    const dormMap={'Antes das 20h':15,'Entre 20h e 21h':15,'Entre 21h e 22h':16,'Entre 22h e 23h':17,'Entre 23h e meia-noite':18,'Entre 0h e 1h':19,'Entre 1h e 2h':20,'Entre 2h e 3h':21,'Entre 3h e 4h':22,'Depois das 4h (virada)':23};
+    const acorMap={'Antes das 5h':0,'Entre 5h e 5h30':0,'Entre 5h30 e 6h':1,'Entre 6h e 6h30':1,'Entre 6h30 e 7h':2,'Depois das 7h':2};
+    const dormH=dormMap[s.horaDorme]||17;
+    const acorH=acorMap[s.horaAcorda]||1;
+    const grid=Array(7).fill(null).map(()=>Array(HOURS.length).fill('neutro'));
+    for(let d=0;d<7;d++){
+      for(let h=0;h<HOURS.length;h++){
+        if(d<5&&h>=2&&h<=6){grid[d][h]='escola';continue;}
+        let isSono=false;
+        if(dormH>acorH){isSono=h>=dormH||h<=acorH;}else{isSono=h>=dormH&&h<=acorH;}
+        if(isSono){grid[d][h]='sono';continue;}
+        const hasTarde=(s.schedule&&(s.schedule['Tarde']||[])[d]);
+        const hasNoite=(s.schedule&&(s.schedule['Noite']||[])[d]);
+        if(hasTarde&&h>=6&&h<=10){grid[d][h]='livre';continue;}
+        if(hasNoite&&h>=13&&h<=17){grid[d][h]='livre';continue;}
+        const dayNames=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+        if((s.esporteDias||[]).includes(dayNames[d])&&h>=13&&h<=15){grid[d][h]='ativ';continue;}
+        if(d>=5&&h>=4&&h<=12){grid[d][h]='livre';}
+      }
+    }
+    const COLORS={escola:'#0F1B2D',sono:'#7C3AED',ativ:'#F59E0B',livre:'#0EA5A0',neutro:'#F1F5F9'};
+    let html=`<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.62rem;min-width:500px;width:100%">`;
+    html+=`<tr><th style="padding:2px 5px;color:var(--ink3);font-weight:600;text-align:left"></th>`;
+    HOURS.forEach(h=>html+=`<th style="padding:2px 1px;color:var(--ink3);font-weight:500;text-align:center;font-size:.58rem">${h}</th>`);
+    html+=`</tr>`;
+    DAYS_SHORT.forEach((day,d)=>{
+      html+=`<tr><td style="padding:2px 5px 2px 0;font-weight:600;color:var(--ink2);white-space:nowrap;font-size:.74rem">${day}</td>`;
+      grid[d].forEach((state)=>{
+        const bg=COLORS[state];
+        html+=`<td style="height:16px;background:${bg};border-radius:2px;padding:0;border:1px solid #F8FAFF"></td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`</table></div>`;
+    html+=`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">`;
+    [{c:'#0EA5A0',l:'Livre p/ estudo'},{c:'#0F1B2D',l:'Escola'},{c:'#7C3AED',l:'Sono'},{c:'#F59E0B',l:'Atividade'},{c:'#E2E8F0',l:'Sem info'}]
+      .forEach(l=>html+=`<div style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--ink3)"><div style="width:10px;height:10px;border-radius:2px;background:${l.c}"></div>${l.l}</div>`);
+    html+=`</div>`;
+    return html;
+  }
+
+  const sonoAlertHtml=s.alertaSono?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:8px 12px;font-size:.82rem;color:#92400E;margin-bottom:12px">Sono insuficiente: ${s.horasSonoNum||'?'}h/noite — minimo recomendado: 7h</div>`:'';
+  const riscoHtml=scoreRisco>=7?`<div style="background:#FFE4E6;border:1px solid #F43F5E;border-radius:8px;padding:8px 12px;font-size:.82rem;color:#9F1239;margin-bottom:10px"><strong>Alerta de risco ${scoreRisco}/10</strong> — Este aluno precisa de acompanhamento prioritario</div>`:'';
 
   document.getElementById('dash-body').innerHTML=
-    (s.alert?`<div class="alert-bar">⚠️ <strong>Atenção:</strong> ${s.alert}</div>`:'')+
+    (s.alert?`<div class="alert-bar">${s.alert}</div>`:'')+
     `<div class="student-hero">
       <div class="avatar">${s.initials}</div>
       <div class="student-info">
-        <h2>${s.name}</h2><p>${s.serie} · ${s.escola}</p>
+        <h2>${s.name}</h2><p>${s.serie}</p>
         <div class="hero-tags">
-          <span class="htag t">🎯 ${s.curso}</span>
-          <span class="htag a">📚 ${s.area}</span>
+          <span class="htag t">Curso: ${s.curso}</span>
+          <span class="htag a">${s.area}</span>
           <span class="htag">${tot} turnos livres/sem.</span>
-          ${s.horasSonoNum?`<span class="htag" style="${s.alertaSono?'background:rgba(244,63,94,.2);color:#FDA4AF;border-color:rgba(244,63,94,.3)':''}">😴 ${s.horasSonoNum}h sono</span>`:''}
+          ${s.horasSonoNum?`<span class="htag" style="${s.alertaSono?'background:rgba(244,63,94,.2);color:#FDA4AF;border-color:rgba(244,63,94,.3)':''}">Sono: ${s.horasSonoNum}h${s.alertaSono?' !':''}</span>`:''}
+          <span class="htag" style="background:${riscoColor}22;color:${riscoColor};border-color:${riscoColor}44">Risco: ${scoreRisco}/10</span>
         </div>
       </div>
     </div>
     <div class="dgrid">
       <div class="card c6">
-        <div class="card-h">📊 Desempenho por Disciplina</div><div class="card-s">Autoavaliação (1–5)</div>
-        <div style="height:280px"><canvas id="rC"></canvas></div>
+        <div class="card-h">Desempenho por Disciplina</div>
+        <div class="card-s">Autoavaliacao 1–5 · verde = bom · amarelo = regular · vermelho = atencao · Tendencia: <strong style="color:var(--teal)">${areaPrincipal}</strong></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
+          <div style="overflow-y:auto;max-height:300px">${discBars()}</div>
+          <div style="height:220px"><canvas id="rC"></canvas></div>
+        </div>
       </div>
       <div class="card c6">
-        <div class="card-h">💬 Motivação & Estado Emocional</div><div class="card-s">${ml}</div>
+        <div class="card-h">Motivacao & Emocional</div>
+        <div class="card-s">${motivDesc}</div>
         <div class="score-ring"><canvas id="sC"></canvas><div class="score-center"><span class="score-num" style="color:${mc}">${s.motivacao}</span><span class="score-lbl">de 5</span></div></div>
-        <div style="text-align:center;font-size:.82rem;color:var(--ink3);margin-bottom:14px">${ml}</div>
-        <div class="ins-list">${s.insights.map(i=>`<div class="ins ${i.type}"><span class="ins-ic">${i.icon}</span><span>${i.text}</span></div>`).join('')}</div>
+        <div style="text-align:center;font-size:.82rem;color:var(--ink3);margin-bottom:14px">${motivDesc}</div>
+        <div class="ins-list">${s.insights.map(i=>`<div class="ins ${i.type}"><span class="ins-ic">${i.icon==='+'?'✅':i.icon==='!'?'⚠️':'💡'}</span><span>${i.text}</span></div>`).join('')}</div>
       </div>
       <div class="card c12">
-        <div class="card-h">🕐 Grade de Rotina Semanal</div>
-        <div class="card-s">Visualização completa do dia — escola, sono, atividades e janelas livres para estudar</div>
-        ${sonoAlertHtml}
-        ${rotinaGrid()}
-        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
-          <div style="background:#F0FDF4;border-radius:8px;padding:10px 14px;font-size:.82rem">
-            <strong style="color:#065F46">Dorme:</strong> <span style="color:#065F46">${s.horaDorme||'—'}</span>
-          </div>
-          <div style="background:#F0FDF4;border-radius:8px;padding:10px 14px;font-size:.82rem">
-            <strong style="color:#065F46">Acorda:</strong> <span style="color:#065F46">${s.horaAcorda||'—'}</span>
-          </div>
-          <div style="background:${s.alertaSono?'#FEF2F2':'#F0FDF4'};border-radius:8px;padding:10px 14px;font-size:.82rem">
-            <strong style="color:${s.alertaSono?'#991B1B':'#065F46'}">Sono médio:</strong> <span style="color:${s.alertaSono?'#991B1B':'#065F46'}">${s.horasSonoNum||'?'}h ${s.alertaSono?'⚠️':''}</span>
-          </div>
-          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem">
-            <strong style="color:var(--ink2)">Horas livres/sem:</strong> <span style="color:var(--teal)">${s.horasLivres||'—'}</span>
-          </div>
-          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem">
-            <strong style="color:var(--ink2)">Fim de semana:</strong> <span style="color:var(--ink3)">${s.fimDeSemana||'—'}</span>
-          </div>
-          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem">
-            <strong style="color:var(--ink2)">Ambiente:</strong> <span style="color:var(--ink3)">${s.ambiente||'—'}</span>
-          </div>
+        <div class="card-h">Grade de Rotina Semanal</div>
+        <div class="card-s">Escola, sono, atividades e janelas livres — visualizacao hora a hora</div>
+        ${sonoAlertHtml}${rotinaGrid()}
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+          <div style="background:#F0FDF4;border-radius:8px;padding:10px 14px;font-size:.82rem"><strong style="color:#065F46">Dorme:</strong> <span style="color:#065F46">${s.horaDorme||'—'}</span></div>
+          <div style="background:#F0FDF4;border-radius:8px;padding:10px 14px;font-size:.82rem"><strong style="color:#065F46">Acorda:</strong> <span style="color:#065F46">${s.horaAcorda||'—'}</span></div>
+          <div style="background:${s.alertaSono?'#FEF2F2':'#F0FDF4'};border-radius:8px;padding:10px 14px;font-size:.82rem"><strong style="color:${s.alertaSono?'#991B1B':'#065F46'}">Sono medio:</strong> <span style="color:${s.alertaSono?'#991B1B':'#065F46'}">${s.horasSonoNum||'?'}h${s.alertaSono?' ⚠️':''}</span></div>
+          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem"><strong style="color:var(--ink2)">Horas livres/sem:</strong> <span style="color:var(--teal)">${s.horasLivres||'—'}</span></div>
+          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem"><strong style="color:var(--ink2)">Horas reais p/ estudo:</strong> <span style="color:var(--teal)">~${s.horasReaisEstudo||'?'}h</span></div>
+          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem"><strong style="color:var(--ink2)">Ambiente:</strong> <span style="color:var(--ink3)">${s.ambiente||'—'}</span></div>
         </div>
       </div>
       <div class="card c4">
-        <div class="card-h">🧠 Perfil de Estudo</div><div class="card-s">Scores comportamentais calculados</div>
-        ${scoreMini('Procrastinação',scoreProc,10,procColor,scoreProc<=3?'Baixa — ótimo!':scoreProc<=6?'Moderada — atenção':'Alta — prioridade no plano')}
-        ${scoreMini('Foco (tempo contínuo)',scoreFoco,5,focoColor,s.tempoFoco||'—')}
+        <div class="card-h">Perfil de Estudo — Scores</div>
+        <div class="card-s">Calculados automaticamente a partir das respostas</div>
+        ${riscoHtml}
+        ${scoreMini('Procrastinacao',scoreProc,10,procColor,scoreProc<=3?'Baixa — otimo':scoreProc<=6?'Moderada — atencao':'Alta — prioridade')}
+        ${scoreMini('Foco sem distracao',scoreFoco,5,focoColor,s.tempoFoco||'—')}
         ${scoreMini('Autodisciplina',scoreAuto,5,autoColor,s.autodisciplina||'—')}
-        ${scoreMini('Nível de ansiedade',scoreAnx,5,anxColor,s.ansiedadeGeral||'—')}
-        <div style="margin-top:10px;padding:10px;background:#F8FAFF;border-radius:8px;font-size:.82rem;color:var(--ink3)">
-          <strong style="color:var(--ink2)">Celular nos estudos:</strong> ${s.celularEstudo||'—'}<br>
-          <strong style="color:var(--ink2)">Planejamento:</strong> ${s.planejamento||'—'}
+        ${scoreMini('Ansiedade geral',scoreAnx,5,anxColor,s.ansiedadeGeral||'—')}
+        ${scoreMini('Regulacao emocional',scoreReg,10,regColor,scoreReg>=7?'Boa regulacao':scoreReg>=4?'Moderada':'Apoio emocional urgente')}
+        ${scoreMini('Maturidade vocacional',scoreVoc,10,vocColor,scoreVoc>=7?'Bem definido':scoreVoc>=4?'Em desenvolvimento':'Explorar opcoes de carreira')}
+        <div style="margin-top:10px;padding:10px;background:#F8FAFF;border-radius:8px;font-size:.79rem;color:var(--ink3)">
+          <strong style="color:var(--ink2)">Celular:</strong> ${s.celularEstudo||'—'}<br>
+          <strong style="color:var(--ink2)">Planejamento:</strong> ${s.planejamento||'—'}<br>
+          <strong style="color:var(--ink2)">Rede de apoio:</strong> ${s.redeApoio||'—'}
         </div>
       </div>
       <div class="card c4">
-        <div class="card-h">🎯 Perfil Vocacional</div><div class="card-s">Áreas de interesse</div>
-        <div style="height:160px"><canvas id="dC"></canvas></div>
+        <div class="card-h">Tendencia de Area do Conhecimento</div>
+        <div class="card-s">Calculada pelas medias das disciplinas por grupo — BNCC</div>
+        ${areaTendenciaCard()}
+        <div style="margin-top:10px;padding:8px 12px;background:#F0FDF4;border-radius:8px;font-size:.8rem;color:#065F46">
+          <strong>Area principal:</strong> ${areaPrincipal}
+        </div>
+      </div>
+      <div class="card c4">
+        <div class="card-h">Perfil Vocacional</div>
+        <div class="card-s">Areas de interesse declaradas e orientacao</div>
+        <div style="height:130px"><canvas id="dC"></canvas></div>
         <div style="font-size:.78rem;color:var(--ink3);margin-top:8px">
-          <strong style="color:var(--ink2)">Modelo universidade:</strong> ${s.modeloUniv||'—'}<br>
-          <strong style="color:var(--ink2)">Quando vestibular:</strong> ${s.quando||'—'}
+          <strong style="color:var(--ink2)">Curso:</strong> ${s.curso||'—'}<br>
+          <strong style="color:var(--ink2)">Universidade:</strong> ${s.univ||'—'}<br>
+          <strong style="color:var(--ink2)">Quando:</strong> ${s.quando||'—'}<br>
+          <strong style="color:var(--ink2)">Modelo:</strong> ${s.modeloUniv||'—'}
         </div>
       </div>
       <div class="card c4">
-        <div class="card-h">⚡ Atividades & Rotina</div><div class="card-s">Fora da escola</div>
-        ${s.atividades.length?s.atividades.map(a=>`<div class="act-row"><div class="act-ico" style="background:${a.color}">${a.icon}</div><div style="flex:1"><div class="act-nm">${a.name}</div><div class="act-tm">🕐 ${a.horario}</div></div><span class="act-tag" style="color:${a.tipoColor};background:${a.tipoBg}">${a.tipo}</span></div>`).join(''):'<p style="color:var(--ink3);font-size:.87rem;margin-bottom:8px">Nenhuma registrada.</p>'}
+        <div class="card-h">Atividades & Rotina</div>
+        <div class="card-s">Fora da escola</div>
+        ${s.atividades.length?s.atividades.map(a=>`<div class="act-row"><div class="act-ico" style="background:${a.color}">${a.icon==='*'?'📌':a.icon}</div><div style="flex:1"><div class="act-nm">${a.name}</div><div class="act-tm">${a.horario}</div></div><span class="act-tag" style="color:${a.tipoColor};background:${a.tipoBg}">${a.tipo}</span></div>`).join(''):'<p style="color:var(--ink3);font-size:.87rem;margin-bottom:8px">Nenhuma registrada.</p>'}
         <div style="margin-top:10px;font-size:.78rem;color:var(--ink3)">
           <strong style="color:var(--ink2)">Esporte:</strong> ${(s.esporteDias||[]).join(', ')||'—'}<br>
           <strong style="color:var(--ink2)">Internet:</strong> ${s.acesso||'—'}
@@ -1054,17 +1226,22 @@ function renderDash(s){
       </div>
       <div class="c8">
         <div class="plan-box">
-          <h3>📋 Plano de Estudos — ${s.name.split(' ')[0]}</h3>
+          <h3>Plano de Estudos — ${s.name.split(' ')[0]}</h3>
           ${s.plano.map(p=>`<div class="plan-row2"><div class="plan-dot" style="background:${p.cor}"></div><span class="plan-txt"><span class="plan-bold">${p.bold}</span>${p.texto}</span></div>`).join('')}
         </div>
       </div>
     </div>`;
 
   Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});charts={};
-  charts.r=new Chart(document.getElementById('rC'),{type:'radar',data:{labels:Object.keys(s.disciplinas),datasets:[{label:s.name,data:Object.values(s.disciplinas),backgroundColor:'rgba(14,165,160,.13)',borderColor:'#0EA5A0',pointBackgroundColor:'#0EA5A0',pointRadius:5,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:9},color:'#94A3B8'},grid:{color:'#E2E8F0'},pointLabels:{font:{size:9.5},color:'#334155'}}},plugins:{legend:{display:false}}}});
+  // Radar chart with all disciplines
+  const radarLabels=notaEntries.map(([d])=>d.length>12?d.slice(0,11)+'…':d);
+  const radarData=notaEntries.map(([,v])=>Number(v)||0);
+  if(document.getElementById('rC'))
+    charts.r=new Chart(document.getElementById('rC'),{type:'radar',data:{labels:radarLabels,datasets:[{label:s.name,data:radarData,backgroundColor:'rgba(14,165,160,.12)',borderColor:'#0EA5A0',pointBackgroundColor:'#0EA5A0',pointRadius:3,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:8},color:'#94A3B8'},grid:{color:'#E2E8F0'},pointLabels:{font:{size:8.5},color:'#334155'}}},plugins:{legend:{display:false}}}});
   charts.s=new Chart(document.getElementById('sC'),{type:'doughnut',data:{datasets:[{data:[s.motivacao,5-s.motivacao],backgroundColor:[s.motivacao>=4?'#10B981':s.motivacao>=3?'#F59E0B':'#F43F5E','#F1F5F9'],borderWidth:0,cutout:'78%'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   const vc=['#0EA5A0','#1A56DB','#7C3AED','#F59E0B','#F43F5E','#10B981'];
-  charts.d=new Chart(document.getElementById('dC'),{type:'doughnut',data:{labels:s.vocacional.length?s.vocacional:['Não definido'],datasets:[{data:s.vocacional.length?s.vocacional.map((_,i,a)=>Math.round(100/a.length)):[100],backgroundColor:vc.slice(0,Math.max(s.vocacional.length,1)),borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:7}}}}});
+  const vocLabels=s.vocacional&&s.vocacional.length?s.vocacional:['Nao definido'];
+  charts.d=new Chart(document.getElementById('dC'),{type:'doughnut',data:{labels:vocLabels,datasets:[{data:vocLabels.map((_,i,a)=>Math.round(100/a.length)),backgroundColor:vc.slice(0,Math.max(vocLabels.length,1)),borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:7}}}}});
 }
 
 // ══════ PDF — FICHA COMPLETA COM TODAS AS RESPOSTAS ══════
@@ -1212,7 +1389,19 @@ async function exportPDF(){
   const gostasList=(s.gostas&&s.gostas.length>0)?s.gostas.join(', '):(s.gosta||'—');
   const difList=(s.dificeis&&s.dificeis.length>0)?s.dificeis.join(', '):(s.dificil||'—');
   full('Disciplinas favoritas',gostasList,'Pontos fortes a serem mantidos e aproveitados no plano.');
-  full('Principais dificuldades',difList,'Áreas que precisam de atenção prioritária no planejamento de estudos.');
+  full('Principais dificuldades',difList,'Areas que precisam de atenção prioritária no planejamento de estudos.');
+  // Area do conhecimento tendency
+  const pdfGrupos={'Linguagens':['Português I','Literatura','Redação','Inglês'],'Matematica':['Matemática I','Matemática II'],'Ciencias da Natureza':['Biologia','Física I','Física II','Química I','Química II'],'Ciencias Humanas':['História','História da Arte','Geografia I','Filosofia','Sociologia']};
+  const pdfNotas=s.notas||s.disciplinas||{};
+  const pdfTend=Object.entries(pdfGrupos).map(([g,ds])=>{const vs=ds.map(d=>Number(pdfNotas[d]||0)).filter(v=>v>0);return[g,vs.length?(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(1):0];}).filter(([,v])=>Number(v)>0).sort((a,b)=>Number(b[1])-Number(a[1]));
+  if(pdfTend.length){
+    chk(16);sf(240,253,244);doc.roundedRect(M,y[0],CW,13,2,2,'F');sf(16,185,129);doc.rect(M,y[0],3.5,13,'F');
+    fn(7,'bold');st(6,95,70);doc.text('TENDENCIA DE AREA DO CONHECIMENTO (por media das disciplinas)',M+6,y[0]+4.5);
+    fn(8,'normal');st(15,27,45);
+    const tendStr=pdfTend.slice(0,3).map(([g,m])=>g+' ('+m+'/5)').join('  |  ');
+    doc.text(doc.splitTextToSize(tendStr,CW-12)[0],M+6,y[0]+9.5);
+    y[0]+=16;
+  }
   tags('Método de estudo preferido',s.metodo,'Como o aluno aprende melhor — guia para recomendar materiais e estratégias.');
   pair('Estilo de leitura',s.estiloLeitura||'—','Frequência de simulados',s.simulados||'—');
   full('Rotina de revisão',s.revisao||'—','Se o aluno revisa o conteúdo ou apenas estuda na véspera.');
