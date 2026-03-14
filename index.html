@@ -3,890 +3,1071 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mentoria CEPRA — Anamnese Educacional</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<title>Mentoria CEPRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  :root {
-    --navy:#0F1B2D; --blue:#1A56DB; --teal:#0EA5A0; --teal-light:#CFFAFE;
-    --amber:#F59E0B; --amber-light:#FEF3C7; --rose:#F43F5E; --rose-light:#FFE4E6;
-    --green:#10B981; --green-light:#D1FAE5; --purple:#7C3AED; --purple-light:#EDE9FE;
-    --slate:#64748B; --white:#FFFFFF;
-    --font-head:'Syne',sans-serif; --font-body:'DM Sans',sans-serif;
-    --radius:16px; --radius-sm:10px;
-    --shadow:0 4px 24px rgba(15,27,45,.10); --shadow-lg:0 12px 48px rgba(15,27,45,.18);
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:var(--font-body);background:#F0F4FA;color:var(--navy);min-height:100vh;overflow-x:hidden;}
+:root{
+  --ink:#0C1220;--ink2:#2D3A50;--ink3:#64748B;
+  --teal:#0EA5A0;--teal2:#0D9488;--teal3:#CFFAFE;
+  --blue:#1A56DB;--blue2:#1346C0;--blue3:#DBEAFE;
+  --amber:#F59E0B;--amber2:#FEF3C7;
+  --rose:#F43F5E;--rose2:#FFE4E6;
+  --green:#10B981;--green2:#D1FAE5;
+  --purple:#7C3AED;--purple2:#EDE9FE;
+  --white:#FFFFFF;--bg:#F8FAFF;
+  --ff:'Fraunces',Georgia,serif;--fb:'DM Sans',sans-serif;
+  --r:18px;--r2:12px;
+  --sh:0 2px 16px rgba(12,18,32,.08);--shd:0 8px 40px rgba(12,18,32,.14);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
 
-  /* ── SCREENS ── */
-  .screen{display:none;min-height:100vh;}.screen.active{display:block;}
+/* HOME */
+#s-home{background:var(--ink);align-items:center;justify-content:center;position:relative;overflow:hidden;padding:40px 24px}
+#s-home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 120%,rgba(14,165,160,.22),transparent),radial-gradient(ellipse 60% 50% at 85% -10%,rgba(26,86,219,.18),transparent)}
+.home-wrap{position:relative;z-index:1;text-align:center;max-width:540px;width:100%}
+.home-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 16px;border-radius:40px;margin-bottom:28px}
+.home-eyebrow span{width:6px;height:6px;border-radius:50%;background:var(--teal);display:inline-block}
+.home-title{font-family:var(--ff);font-size:clamp(2.4rem,6vw,3.6rem);font-weight:700;color:var(--white);line-height:1.1;letter-spacing:-.02em;margin-bottom:12px}
+.home-title em{font-style:italic;color:var(--teal)}
+.home-sub{color:rgba(255,255,255,.45);font-size:1rem;line-height:1.7;margin-bottom:48px}
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:480px){.home-cards{grid-template-columns:1fr}}
+.hcard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:28px 24px;cursor:pointer;transition:all .28s cubic-bezier(.4,0,.2,1);text-align:left;position:relative;overflow:hidden}
+.hcard:hover{transform:translateY(-5px);border-color:var(--teal);box-shadow:0 20px 48px rgba(14,165,160,.2)}
+.hcard-icon{font-size:2rem;margin-bottom:14px}
+.hcard h2{font-family:var(--ff);font-size:1.2rem;color:var(--white);margin-bottom:6px}
+.hcard p{font-size:.84rem;color:rgba(255,255,255,.42);line-height:1.6}
+.hcard-arr{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.2);font-size:1.3rem;transition:all .25s}
+.hcard:hover .hcard-arr{color:var(--teal);transform:translateY(-50%) translateX(4px)}
 
-  /* ── HOME ── */
-  #screen-home{min-height:100vh;background:linear-gradient(135deg,var(--navy) 0%,#1a3a60 55%,#0d3b6e 100%);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden;}
-  #screen-home::before{content:'';position:absolute;inset:0;
-    background:radial-gradient(ellipse at 75% 20%,rgba(14,165,160,.20) 0%,transparent 55%),
-               radial-gradient(ellipse at 15% 85%,rgba(26,86,219,.22) 0%,transparent 50%);pointer-events:none;}
-  .home-logo{font-family:var(--font-head);font-size:2.6rem;font-weight:800;color:var(--white);letter-spacing:-1px;margin-bottom:6px;text-align:center;}
-  .home-logo span{color:var(--teal);}
-  .home-sub{color:rgba(255,255,255,.55);font-size:.95rem;margin-bottom:52px;text-align:center;}
-  .home-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:580px;width:100%;}
-  @media(max-width:520px){.home-cards{grid-template-columns:1fr;}}
-  .home-card{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.13);border-radius:var(--radius);
-    padding:34px 26px;cursor:pointer;transition:all .25s ease;text-align:center;backdrop-filter:blur(12px);}
-  .home-card:hover{background:rgba(255,255,255,.14);border-color:var(--teal);transform:translateY(-4px);box-shadow:0 16px 40px rgba(14,165,160,.2);}
-  .home-card .icon{font-size:2.6rem;margin-bottom:12px;display:block;}
-  .home-card h2{font-family:var(--font-head);font-size:1.2rem;font-weight:700;color:var(--white);margin-bottom:6px;}
-  .home-card p{font-size:.86rem;color:rgba(255,255,255,.5);line-height:1.55;}
+/* MODAL */
+.modal-veil{position:fixed;inset:0;background:rgba(10,18,32,.8);display:flex;align-items:center;justify-content:center;z-index:9900;backdrop-filter:blur(8px);animation:veilIn .2s ease}
+@keyframes veilIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--white);border-radius:var(--r);padding:40px 36px;width:100%;max-width:400px;box-shadow:var(--shd);animation:boxUp .32s cubic-bezier(.34,1.56,.64,1)}
+@keyframes boxUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.modal-icon-wrap{width:56px;height:56px;border-radius:16px;background:var(--blue3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem}
+.modal-h{font-family:var(--ff);font-size:1.5rem;font-weight:700;text-align:center;margin-bottom:6px}
+.modal-s{font-size:.88rem;color:var(--ink3);text-align:center;margin-bottom:24px;line-height:1.5}
+.pw-wrap{position:relative;margin-bottom:6px}
+.pw-input{width:100%;padding:13px 46px 13px 16px;border:2px solid #E2E8F0;border-radius:var(--r2);font-family:var(--fb);font-size:1rem;color:var(--ink);outline:none;transition:all .2s}
+.pw-input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(26,86,219,.1)}
+.pw-input.err{border-color:var(--rose);box-shadow:0 0 0 4px rgba(244,63,94,.1)}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink3);font-size:1.1rem}
+.pw-err{color:var(--rose);font-size:.82rem;text-align:center;min-height:20px;margin-bottom:8px}
+.btn-primary{width:100%;padding:14px;background:var(--blue);border:none;color:var(--white);border-radius:var(--r2);font-family:var(--fb);font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--blue2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,86,219,.35)}
+.btn-cancel{width:100%;padding:10px;background:none;border:none;color:var(--ink3);font-family:var(--fb);font-size:.88rem;cursor:pointer;margin-top:8px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}60%{transform:translateX(8px)}}
+.shake{animation:shake .4s ease}
 
-  /* ── MODAL SENHA ── */
-  .modal-overlay{position:fixed;inset:0;background:rgba(10,20,40,.75);display:flex;align-items:center;
-    justify-content:center;z-index:9000;backdrop-filter:blur(6px);animation:fadeIn .2s ease;}
-  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-  .modal-box{background:var(--white);border-radius:var(--radius);padding:36px 32px;width:100%;max-width:380px;
-    box-shadow:var(--shadow-lg);animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);}
-  @keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
-  .modal-icon{font-size:2.4rem;text-align:center;margin-bottom:12px;}
-  .modal-title{font-family:var(--font-head);font-size:1.3rem;font-weight:700;color:var(--navy);text-align:center;margin-bottom:6px;}
-  .modal-sub{font-size:.88rem;color:var(--slate);text-align:center;margin-bottom:24px;line-height:1.5;}
-  .modal-input-wrap{position:relative;margin-bottom:8px;}
-  .modal-input{width:100%;padding:13px 44px 13px 16px;border:1.5px solid #E2E8F0;border-radius:var(--radius-sm);
-    font-family:var(--font-body);font-size:1rem;color:var(--navy);outline:none;transition:all .2s;background:#FAFBFD;}
-  .modal-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1);background:var(--white);}
-  .modal-input.error{border-color:var(--rose);box-shadow:0 0 0 3px rgba(244,63,94,.1);}
-  .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;
-    cursor:pointer;font-size:1.1rem;color:var(--slate);padding:4px;transition:color .2s;}
-  .eye-btn:hover{color:var(--navy);}
-  .modal-error{color:var(--rose);font-size:.82rem;margin-bottom:14px;min-height:18px;text-align:center;}
-  .modal-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--blue),var(--teal));border:none;
-    color:var(--white);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:1rem;font-weight:600;
-    cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,86,219,.3);}
-  .modal-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(26,86,219,.4);}
-  .modal-cancel{width:100%;padding:10px;background:none;border:none;color:var(--slate);font-family:var(--font-body);
-    font-size:.88rem;cursor:pointer;margin-top:10px;transition:color .2s;}
-  .modal-cancel:hover{color:var(--navy);}
-  .shake{animation:shake .4s ease;}
-  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}50%{transform:translateX(8px);}}
+/* TOPBAR */
+.topbar{background:var(--ink);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200;box-shadow:0 1px 0 rgba(255,255,255,.06)}
+.topbar-logo{font-family:var(--ff);font-weight:700;font-size:1.2rem;color:var(--white)}
+.topbar-logo b{color:var(--teal)}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn-ghost{background:none;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.65);padding:7px 16px;border-radius:40px;cursor:pointer;font-family:var(--fb);font-size:.82rem;transition:all .2s}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
 
-  /* ── TOPBAR ── */
-  .topbar{background:var(--navy);padding:0 24px;height:64px;display:flex;align-items:center;
-    justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
-  .topbar-logo{font-family:var(--font-head);font-weight:800;font-size:1.25rem;color:var(--white);}
-  .topbar-logo span{color:var(--teal);}
-  .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-  .btn-ghost{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);
-    padding:7px 16px;border-radius:20px;cursor:pointer;font-family:var(--font-body);font-size:.84rem;transition:all .2s;}
-  .btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+/* FORM TYPEFORM */
+#s-form{background:var(--white)}
+.form-progress{height:3px;background:#E2E8F0}
+.form-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .5s cubic-bezier(.4,0,.2,1)}
+.form-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px 90px;min-height:calc(100vh - 63px)}
+.form-slide{width:100%;max-width:620px}
+@keyframes slideIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-18px)}}
 
-  /* ── PROGRESS ── */
-  .progress-bar{height:4px;background:rgba(26,86,219,.12);}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .4s ease;}
+.q-num{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:var(--teal);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+.q-num-badge{width:22px;height:22px;border-radius:6px;background:var(--teal3);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--teal2);font-weight:700}
+.q-title{font-family:var(--ff);font-size:clamp(1.5rem,4vw,2rem);font-weight:600;color:var(--ink);line-height:1.3;margin-bottom:8px;letter-spacing:-.02em}
+.q-title em{font-style:italic;color:var(--teal)}
+.q-hint{font-size:.9rem;color:var(--ink3);margin-bottom:28px;line-height:1.6}
+.tf-input{width:100%;padding:14px 0;border:none;border-bottom:2px solid #E2E8F0;background:transparent;font-family:var(--fb);font-size:1.15rem;color:var(--ink);outline:none;transition:border-color .25s}
+.tf-input:focus{border-bottom-color:var(--blue)}
+.tf-input::placeholder{color:#CBD5E1}
+.tf-textarea{width:100%;padding:16px;border:1.5px solid #E8EDF4;border-radius:var(--r2);background:var(--white);font-family:var(--fb);font-size:.95rem;color:var(--ink);outline:none;transition:all .2s;resize:vertical;min-height:120px;margin-top:4px}
+.tf-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+.input-group{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:480px){.input-group{grid-template-columns:1fr}}
+.input-field{margin-bottom:4px}
+.input-field label{display:block;font-size:.75rem;font-weight:600;color:var(--ink3);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase}
+.input-field input{width:100%;padding:11px 14px;border:1.5px solid #E8EDF4;border-radius:var(--r2);font-family:var(--fb);font-size:.93rem;color:var(--ink);outline:none;background:var(--white);transition:all .2s}
+.input-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+.choice-grid{display:grid;gap:9px;margin-bottom:4px}
+.choice-grid.c2{grid-template-columns:1fr 1fr}
+@media(max-width:500px){.choice-grid.c2{grid-template-columns:1fr}}
+.choice{padding:13px 16px;border:1.5px solid #E8EDF4;border-radius:var(--r2);cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:10px;background:var(--white);font-size:.92rem;color:var(--ink2);font-family:var(--fb);user-select:none}
+.choice:hover{border-color:var(--teal);background:rgba(14,165,160,.03)}
+.choice.sel{border-color:var(--teal);background:rgba(14,165,160,.07);color:var(--ink)}
+.choice-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid #CBD5E1;flex-shrink:0;transition:all .18s;display:flex;align-items:center;justify-content:center}
+.choice.sel .choice-radio{background:var(--teal);border-color:var(--teal)}
+.choice.sel .choice-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:white}
+.choice-chk{width:20px;height:20px;border-radius:6px;border:1.5px solid #CBD5E1;flex-shrink:0;transition:all .18s;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:transparent}
+.choice.sel .choice-chk{background:var(--teal);border-color:var(--teal);color:white}
+.tag-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.tag{padding:9px 16px;border:1.5px solid #E8EDF4;border-radius:40px;font-size:.84rem;cursor:pointer;transition:all .18s;background:var(--white);color:var(--ink3);user-select:none}
+.tag:hover{border-color:var(--teal);color:var(--teal)}
+.tag.sel{background:var(--teal);border-color:var(--teal);color:white}
+.rating-table{display:flex;flex-direction:column;gap:9px}
+.rating-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--r2);border:1.5px solid #F1F5F9;background:var(--white);transition:border-color .18s}
+.rating-row:hover{border-color:#E2E8F0}
+.rating-label{flex:1;font-size:.89rem;color:var(--ink2);font-weight:500}
+.stars{display:flex;gap:4px}
+.star{width:32px;height:32px;border-radius:8px;border:1.5px solid #E2E8F0;background:var(--white);cursor:pointer;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:#94A3B8;transition:all .13s;font-family:var(--fb)}
+.star:hover,.star.lit{background:var(--amber2);border-color:var(--amber);color:#92400E}
+.sched-wrap{overflow-x:auto;margin-bottom:4px}
+.sched{display:grid;grid-template-columns:68px repeat(7,1fr);gap:4px;min-width:460px}
+.sched-h{text-align:center;font-size:.7rem;font-weight:600;color:var(--ink3);padding:4px 0;text-transform:uppercase;letter-spacing:.05em}
+.sched-period{display:flex;align-items:center;font-size:.79rem;font-weight:600;color:var(--ink2);padding:2px 0}
+.sched-cell{height:36px;border-radius:8px;border:1.5px solid #E8EDF4;cursor:pointer;background:var(--white);transition:all .13s;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:transparent}
+.sched-cell:hover{border-color:var(--teal);background:var(--teal3)}
+.sched-cell.on{background:var(--teal);border-color:var(--teal);color:white}
+.sched-cell.on::after{content:'✓'}
+.slider-wrap{padding:8px 0 4px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;outline:none;border:none;padding:0;cursor:pointer;background:linear-gradient(90deg,var(--teal) 0%,var(--teal) var(--pct,60%),#E2E8F0 var(--pct,60%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:white;border:3px solid var(--teal);cursor:pointer;box-shadow:0 2px 8px rgba(14,165,160,.3);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-labels{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink3)}
+.slider-val{text-align:center;font-family:var(--ff);font-size:3.2rem;font-weight:700;color:var(--teal);line-height:1;margin:10px 0 2px}
+.slider-desc{text-align:center;font-size:.88rem;color:var(--ink3);margin-bottom:14px}
+.form-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #E8EDF4;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;z-index:100}
+.nav-left{display:flex;align-items:center;gap:14px}
+.btn-back{background:none;border:1.5px solid #E2E8F0;color:var(--ink3);padding:10px 20px;border-radius:40px;cursor:pointer;font-family:var(--fb);font-size:.9rem;font-weight:500;transition:all .2s}
+.btn-back:hover{border-color:var(--ink);color:var(--ink)}
+.nav-info{font-size:.8rem;color:var(--ink3)}
+.btn-next{background:linear-gradient(135deg,var(--blue),var(--teal));border:none;color:white;padding:12px 28px;border-radius:40px;cursor:pointer;font-family:var(--fb);font-size:.95rem;font-weight:600;transition:all .2s;box-shadow:0 4px 16px rgba(26,86,219,.3);display:flex;align-items:center;gap:8px}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,86,219,.4)}
+.btn-submit{background:linear-gradient(135deg,var(--teal2),var(--green));box-shadow:0 4px 16px rgba(16,185,129,.3)}
+kbd{background:#F1F5F9;border:1px solid #E2E8F0;border-radius:5px;padding:2px 7px;font-size:.7rem;color:var(--ink3)}
+.key-hint{font-size:.74rem;color:#CBD5E1;display:flex;align-items:center;gap:5px}
+.success-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px}
+.success-icon{width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--teal),var(--green));display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 24px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.success-title{font-family:var(--ff);font-size:2rem;font-weight:700;margin-bottom:10px}
+.success-sub{color:var(--ink3);font-size:1rem;line-height:1.7;max-width:400px;margin:0 auto 24px}
+.success-meta{background:var(--blue3);border-radius:var(--r);padding:20px 28px;display:inline-block;font-size:.88rem;color:var(--ink2);line-height:1.9;margin-bottom:28px;text-align:left}
 
-  /* ── FORM ── */
-  #screen-form{background:#F0F4FA;}
-  .form-container{max-width:680px;margin:0 auto;padding:32px 20px 80px;}
-  .step-indicator{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
-  .step-dot{width:32px;height:6px;border-radius:3px;background:#CBD5E1;transition:all .3s;}
-  .step-dot.done{background:var(--teal);}.step-dot.active{background:var(--blue);width:48px;}
-  .step-card{background:var(--white);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);animation:fadeUp .35s ease;}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-  .step-badge{display:inline-flex;align-items:center;gap:6px;background:var(--teal-light);color:var(--teal);
-    font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:12px;}
-  .step-title{font-family:var(--font-head);font-size:1.45rem;font-weight:700;margin-bottom:6px;color:var(--navy);}
-  .step-desc{color:var(--slate);font-size:.93rem;margin-bottom:26px;line-height:1.6;}
-  .divider{height:1px;background:#E2E8F0;margin:22px 0;}
-  .q-label{font-weight:600;font-size:.93rem;color:var(--navy);margin-bottom:10px;display:block;line-height:1.5;}
-  .q-label .req{color:var(--rose);}.q-block{margin-bottom:22px;}
-  input[type=text],input[type=email],input[type=date],select,textarea{
-    width:100%;padding:11px 15px;border:1.5px solid #E2E8F0;border-radius:var(--radius-sm);
-    font-family:var(--font-body);font-size:.93rem;color:var(--navy);background:#FAFBFD;
-    transition:border-color .2s,box-shadow .2s;outline:none;}
-  input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1);background:var(--white);}
-  textarea{resize:vertical;min-height:78px;}
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  @media(max-width:480px){.two-col{grid-template-columns:1fr;}}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;}
-  .chip{padding:8px 15px;border:1.5px solid #E2E8F0;border-radius:24px;font-size:.855rem;
-    cursor:pointer;transition:all .2s;background:var(--white);color:var(--slate);font-family:var(--font-body);user-select:none;}
-  .chip:hover{border-color:var(--blue);color:var(--blue);}
-  .chip.selected{background:var(--blue);border-color:var(--blue);color:var(--white);}
-  .chip.selected.teal{background:var(--teal);border-color:var(--teal);}
-  .rating-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap;}
-  .rating-label{flex:1;min-width:160px;font-size:.88rem;color:var(--navy);}
-  .rating-stars{display:flex;gap:4px;}
-  .star-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid #E2E8F0;background:var(--white);
-    cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;
-    transition:all .15s;color:var(--slate);font-weight:700;font-family:var(--font-body);}
-  .star-btn:hover{border-color:var(--amber);background:var(--amber-light);}
-  .star-btn.active{background:var(--amber);border-color:var(--amber);color:var(--white);}
-  @media(max-width:480px){.rating-row{flex-direction:column;align-items:flex-start;}}
-  .schedule-grid{display:grid;grid-template-columns:82px repeat(7,1fr);gap:3px;font-size:.75rem;overflow-x:auto;}
-  .sched-head{text-align:center;padding:5px 2px;font-weight:600;color:var(--slate);}
-  .sched-label{padding:7px 3px;font-weight:500;color:var(--navy);display:flex;align-items:center;}
-  .sched-cell{height:34px;border-radius:6px;border:1.5px solid #E2E8F0;cursor:pointer;background:var(--white);transition:all .15s;}
-  .sched-cell.active{background:var(--teal);border-color:var(--teal);}
-  input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;
-    background:linear-gradient(90deg,var(--teal) 0%,var(--teal) var(--pct,60%),#E2E8F0 var(--pct,60%));outline:none;border:none;padding:0;}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
-    background:var(--teal);cursor:pointer;box-shadow:0 2px 8px rgba(14,165,160,.3);}
-  .slider-labels{display:flex;justify-content:space-between;margin-top:5px;}
-  .slider-labels span{font-size:.76rem;color:var(--slate);}
-  .slider-val{text-align:center;font-family:var(--font-head);font-size:1.9rem;font-weight:700;color:var(--teal);margin-top:6px;}
-  .step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;}
-  .btn-prev{background:var(--white);border:1.5px solid #E2E8F0;color:var(--slate);padding:11px 26px;
-    border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);font-size:.93rem;font-weight:500;transition:all .2s;}
-  .btn-prev:hover{border-color:var(--blue);color:var(--blue);}
-  .btn-next{background:linear-gradient(135deg,var(--blue),var(--teal));border:none;color:var(--white);
-    padding:11px 30px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);
-    font-size:.93rem;font-weight:600;transition:all .2s;box-shadow:0 4px 14px rgba(26,86,219,.3);}
-  .btn-next:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(26,86,219,.38);}
-  .step-counter{font-size:.83rem;color:var(--slate);}
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:white;padding:12px 24px;border-radius:40px;font-size:.88rem;font-weight:500;z-index:9999;transition:transform .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;box-shadow:var(--shd)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.ok{background:#065F46;border:1px solid var(--green)}
+#toast.err{background:#7F1D1D;border:1px solid var(--rose)}
 
-  /* ── TOAST ── */
-  #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
-    background:var(--navy);color:var(--white);padding:13px 26px;border-radius:40px;
-    font-size:.88rem;font-weight:500;box-shadow:var(--shadow-lg);z-index:9999;
-    transition:transform .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;}
-  #toast.show{transform:translateX(-50%) translateY(0);}
-  #toast.success{background:#065F46;border:1px solid var(--green);}
-  #toast.error{background:#7F1D1D;border:1px solid var(--rose);}
-
-  /* ── DASHBOARD ── */
-  #screen-dashboard{background:#F0F4FA;}
-  .student-select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-    color:var(--white);padding:7px 13px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.86rem;cursor:pointer;outline:none;}
-  .student-select option{background:var(--navy);color:var(--white);}
-  .btn-pdf{background:linear-gradient(135deg,var(--teal),#0891B2);border:none;color:var(--white);
-    padding:8px 17px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);
-    font-size:.84rem;font-weight:600;transition:all .2s;display:flex;align-items:center;gap:6px;}
-  .btn-pdf:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,160,.4);}
-  .dash-container{max-width:1200px;margin:0 auto;padding:26px 20px 60px;}
-
-  /* sheets config */
-  .config-row{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);
-    padding:8px 14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-  .config-row input{flex:1;min-width:220px;padding:7px 11px;border-radius:7px;border:1px solid rgba(255,255,255,.18);
-    background:rgba(255,255,255,.08);color:var(--white);font-family:var(--font-body);font-size:.83rem;outline:none;}
-  .config-row input::placeholder{color:rgba(255,255,255,.38);}
-  .config-row input:focus{border-color:var(--teal);}
-  .btn-url{background:var(--teal);border:none;color:var(--white);padding:7px 14px;border-radius:7px;
-    cursor:pointer;font-size:.82rem;font-weight:600;font-family:var(--font-body);white-space:nowrap;transition:all .2s;}
-  .btn-url:hover{background:#0891B2;}
-  .sheets-badge{font-size:.74rem;padding:3px 10px;border-radius:12px;font-weight:600;white-space:nowrap;}
-  .sheets-badge.ok{background:rgba(16,185,129,.22);color:#6EE7B7;}
-  .sheets-badge.off{background:rgba(100,116,139,.18);color:rgba(255,255,255,.45);}
-
-  /* hero + cards */
-  .student-hero{background:linear-gradient(135deg,var(--navy),#1e3a5f);border-radius:var(--radius);
-    padding:26px 30px;margin-bottom:22px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;
-    box-shadow:var(--shadow-lg);position:relative;overflow:hidden;}
-  .student-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:180px;height:180px;
-    border-radius:50%;background:radial-gradient(circle,rgba(14,165,160,.2),transparent 70%);}
-  .avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--blue));
-    display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:1.5rem;font-weight:800;color:var(--white);flex-shrink:0;}
-  .student-info h2{font-family:var(--font-head);font-size:1.35rem;font-weight:700;color:var(--white);}
-  .student-info p{color:rgba(255,255,255,.58);font-size:.88rem;margin-top:3px;}
-  .student-tags{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;}
-  .stag{background:rgba(255,255,255,.1);color:rgba(255,255,255,.83);font-size:.76rem;padding:3px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.14);}
-  .stag.teal{background:rgba(14,165,160,.25);color:#5EEAD4;border-color:rgba(14,165,160,.3);}
-  .stag.amber{background:rgba(245,158,11,.2);color:#FCD34D;border-color:rgba(245,158,11,.3);}
-  .alert-banner{background:var(--amber-light);border:1.5px solid var(--amber);border-radius:var(--radius-sm);
-    padding:11px 16px;margin-bottom:18px;display:flex;align-items:center;gap:9px;font-size:.88rem;color:#92400E;}
-  .dash-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;}
-  .col-4{grid-column:span 4;}.col-6{grid-column:span 6;}.col-8{grid-column:span 8;}.col-12{grid-column:span 12;}
-  @media(max-width:900px){.col-4,.col-6,.col-8{grid-column:span 12;}}
-  @media(min-width:901px) and (max-width:1100px){.col-4{grid-column:span 6;}}
-  .card{background:var(--white);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);}
-  .card-title{font-family:var(--font-head);font-size:.98rem;font-weight:700;color:var(--navy);margin-bottom:3px;}
-  .card-sub{font-size:.80rem;color:var(--slate);margin-bottom:16px;}
-  .score-circle{width:124px;height:124px;margin:0 auto 10px;position:relative;}
-  .score-circle canvas{width:100%!important;height:100%!important;}
-  .score-value{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .score-value .num{font-family:var(--font-head);font-size:1.9rem;font-weight:800;}
-  .score-value .lbl{font-size:.68rem;color:var(--slate);font-weight:500;}
-  .activity-item{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px solid #F1F5F9;}
-  .activity-item:last-child{border-bottom:none;}
-  .act-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
-  .act-info{flex:1;}.act-name{font-size:.88rem;font-weight:600;color:var(--navy);}
-  .act-time{font-size:.78rem;color:var(--slate);margin-top:1px;}
-  .act-badge{font-size:.70rem;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;}
-  .heatmap{display:grid;grid-template-columns:82px repeat(7,1fr);gap:3px;font-size:.73rem;}
-  .hm-head{text-align:center;padding:3px 0;font-weight:600;color:var(--slate);}
-  .hm-label{display:flex;align-items:center;font-weight:500;color:var(--slate);padding:2px 3px;}
-  .hm-cell{height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:600;}
-  .hm-cell.h0{background:#F1F5F9;color:#CBD5E1;}.hm-cell.h2{background:var(--teal);color:var(--white);}
-  .insight-list{display:flex;flex-direction:column;gap:9px;}
-  .insight-item{display:flex;align-items:flex-start;gap:9px;padding:11px 13px;border-radius:var(--radius-sm);font-size:.86rem;line-height:1.5;}
-  .insight-item.good{background:var(--green-light);color:#065F46;border-left:3px solid var(--green);}
-  .insight-item.warn{background:var(--amber-light);color:#92400E;border-left:3px solid var(--amber);}
-  .insight-item.info{background:var(--purple-light);color:#5B21B6;border-left:3px solid var(--purple);}
-  .insight-icon{font-size:.95rem;flex-shrink:0;margin-top:1px;}
-  .plan-box{background:linear-gradient(135deg,#EFF6FF,#F0FDFA);border:1.5px solid #BFDBFE;border-radius:var(--radius);padding:20px;}
-  .plan-box h3{font-family:var(--font-head);font-weight:700;color:var(--navy);margin-bottom:11px;font-size:.98rem;}
-  .plan-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
-  .plan-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .plan-text{font-size:.88rem;color:var(--slate);}
-  .plan-bold{font-weight:600;color:var(--navy);}
+/* DASHBOARD */
+#s-dash{background:var(--bg)}
+.url-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:var(--r2);padding:5px 10px}
+.url-pill input{background:none;border:none;outline:none;color:rgba(255,255,255,.7);font-family:var(--fb);font-size:.8rem;width:220px}
+.url-pill input::placeholder{color:rgba(255,255,255,.3)}
+.btn-su{background:var(--teal);border:none;color:white;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:var(--fb);transition:all .2s;white-space:nowrap}
+.btn-su:hover{background:var(--teal2)}
+.url-st{font-size:.72rem;padding:4px 10px;border-radius:40px;font-weight:600;white-space:nowrap}
+.url-st.on{background:rgba(16,185,129,.2);color:#6EE7B7}
+.url-st.off{background:rgba(100,116,139,.15);color:rgba(255,255,255,.35)}
+.sel-stu{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:white;padding:7px 13px;border-radius:var(--r2);font-family:var(--fb);font-size:.84rem;cursor:pointer;outline:none}
+.sel-stu option{background:var(--ink);color:white}
+.btn-pdf2{background:linear-gradient(135deg,var(--teal),var(--blue));border:none;color:white;padding:8px 18px;border-radius:var(--r2);cursor:pointer;font-family:var(--fb);font-size:.84rem;font-weight:600;transition:all .2s}
+.btn-pdf2:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,160,.4)}
+.dash-body{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+.alert-bar{background:var(--amber2);border:1.5px solid var(--amber);border-radius:var(--r2);padding:11px 16px;margin-bottom:18px;display:flex;align-items:center;gap:9px;font-size:.88rem;color:#92400E}
+.student-hero{background:linear-gradient(135deg,var(--ink),#1e3a5f);border-radius:var(--r);padding:24px 28px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;box-shadow:var(--shd);position:relative;overflow:hidden}
+.student-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,160,.15),transparent 70%)}
+.avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center;font-family:var(--ff);font-size:1.4rem;font-weight:700;color:white;flex-shrink:0}
+.student-info h2{font-family:var(--ff);font-size:1.3rem;font-weight:700;color:white}
+.student-info p{color:rgba(255,255,255,.5);font-size:.86rem;margin-top:3px}
+.hero-tags{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.htag{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-size:.75rem;padding:3px 12px;border-radius:40px;border:1px solid rgba(255,255,255,.13)}
+.htag.t{background:rgba(14,165,160,.22);color:#5EEAD4;border-color:rgba(14,165,160,.3)}
+.htag.a{background:rgba(245,158,11,.18);color:#FCD34D;border-color:rgba(245,158,11,.25)}
+.dgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.c4{grid-column:span 4}.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}
+@media(max-width:900px){.c4,.c6,.c8{grid-column:span 12}}
+@media(min-width:901px) and (max-width:1100px){.c4{grid-column:span 6}}
+.card{background:white;border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.card-h{font-family:var(--ff);font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:2px}
+.card-s{font-size:.78rem;color:var(--ink3);margin-bottom:14px}
+.score-ring{width:110px;height:110px;margin:0 auto 8px;position:relative}
+.score-ring canvas{width:100%!important;height:100%!important}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-family:var(--ff);font-size:1.9rem;font-weight:700}
+.score-lbl{font-size:.68rem;color:var(--ink3)}
+.act-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #F1F5F9}
+.act-row:last-child{border-bottom:none}
+.act-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.act-nm{font-size:.88rem;font-weight:600;color:var(--ink)}
+.act-tm{font-size:.76rem;color:var(--ink3);margin-top:2px}
+.act-tag{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.hm{display:grid;grid-template-columns:68px repeat(7,1fr);gap:3px;font-size:.72rem}
+.hm-h{text-align:center;padding:3px;font-weight:600;color:var(--ink3)}
+.hm-lb{display:flex;align-items:center;font-weight:500;color:var(--ink3);padding:2px 3px;font-size:.74rem}
+.hm-cell{height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:600}
+.hm-cell.off{background:#F1F5F9;color:#CBD5E1}
+.hm-cell.on{background:var(--teal);color:white}
+.ins-list{display:flex;flex-direction:column;gap:8px}
+.ins{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:var(--r2);font-size:.84rem;line-height:1.5}
+.ins.good{background:var(--green2);color:#065F46;border-left:3px solid var(--green)}
+.ins.warn{background:var(--amber2);color:#92400E;border-left:3px solid var(--amber)}
+.ins.info{background:var(--purple2);color:#5B21B6;border-left:3px solid var(--purple)}
+.ins-ic{flex-shrink:0;margin-top:1px}
+.plan-box{background:linear-gradient(135deg,#EFF6FF,#F0FDFA);border:1.5px solid #BFDBFE;border-radius:var(--r);padding:18px}
+.plan-box h3{font-family:var(--ff);font-weight:700;color:var(--ink);margin-bottom:10px;font-size:.95rem}
+.plan-row2{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.plan-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.plan-txt{font-size:.87rem;color:var(--ink3)}
+.plan-bold{font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
-
 <div id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     HOME
-══════════════════════════════════════ -->
-<div id="screen-home" class="screen active">
-  <div class="home-logo">Mentoria <span>CEPRA</span></div>
-  <p class="home-sub">Sistema de Mentoria Educacional</p>
-  <div class="home-cards">
-    <div class="home-card" onclick="startForm()">
-      <span class="icon">🧑‍🎓</span>
-      <h2>Sou Aluno</h2>
-      <p>Preencha sua anamnese educacional e nos ajude a montar seu plano de estudos ideal</p>
-    </div>
-    <div class="home-card" onclick="openMentorModal()">
-      <span class="icon">📊</span>
-      <h2>Sou Mentor</h2>
-      <p>Acesse o dashboard com gráficos, insights individuais e exporte fichas em PDF</p>
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="home-wrap">
+    <div class="home-eyebrow"><span></span>Sistema de Mentoria Educacional</div>
+    <h1 class="home-title">Mentoria<br><em>CEPRA</em></h1>
+    <p class="home-sub">Orientação vocacional e planos de estudo personalizados para cada aluno.</p>
+    <div class="home-cards">
+      <div class="hcard" onclick="startForm()">
+        <div class="hcard-icon">🧑‍🎓</div>
+        <h2>Sou Aluno</h2>
+        <p>Preencha sua anamnese e nos ajude a montar seu plano ideal</p>
+        <span class="hcard-arr">→</span>
+      </div>
+      <div class="hcard" onclick="openMentorModal()">
+        <div class="hcard-icon">📊</div>
+        <h2>Sou Mentor</h2>
+        <p>Acesse o dashboard com análises e exporte fichas em PDF</p>
+        <span class="hcard-arr">→</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MODAL SENHA
-══════════════════════════════════════ -->
-<div id="modal-senha" style="display:none">
-  <div class="modal-overlay" onclick="closeMentorModal(event)">
+<!-- MODAL SENHA -->
+<div id="modal-pw" style="display:none">
+  <div class="modal-veil" onclick="closePwModal(event)">
     <div class="modal-box" id="modal-box">
-      <div class="modal-icon">🔐</div>
-      <div class="modal-title">Área do Mentor</div>
-      <div class="modal-sub">Digite a senha de acesso para continuar</div>
-      <div class="modal-input-wrap">
-        <input class="modal-input" type="password" id="senha-input"
-          placeholder="Senha de acesso"
-          onkeydown="if(event.key==='Enter')checkSenha()">
-        <button class="eye-btn" onclick="toggleSenhaVisibility()" id="eye-btn">👁️</button>
+      <div class="modal-icon-wrap">🔐</div>
+      <h2 class="modal-h">Área do Mentor</h2>
+      <p class="modal-s">Digite sua senha de acesso para continuar</p>
+      <div class="pw-wrap">
+        <input class="pw-input" type="password" id="pw-inp" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')checkPw()">
+        <button class="pw-eye" onclick="togglePw()" id="pw-eye">👁️</button>
       </div>
-      <div class="modal-error" id="modal-error"></div>
-      <button class="modal-btn" onclick="checkSenha()">Entrar no Dashboard →</button>
-      <button class="modal-cancel" onclick="closeMentorModal()">Cancelar</button>
+      <div class="pw-err" id="pw-err"></div>
+      <button class="btn-primary" onclick="checkPw()">Entrar →</button>
+      <button class="btn-cancel" onclick="document.getElementById('modal-pw').style.display='none'">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     FORM
-══════════════════════════════════════ -->
-<div id="screen-form" class="screen">
+<!-- FORM -->
+<div id="s-form" class="screen">
   <div class="topbar">
-    <div class="topbar-logo">Mentoria <span>CEPRA</span></div>
-    <button class="btn-ghost" onclick="goHome()">← Início</button>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-  <div class="form-container">
-    <div class="step-indicator" id="step-indicator"></div>
-    <div id="step-content"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     DASHBOARD
-══════════════════════════════════════ -->
-<div id="screen-dashboard" class="screen">
-  <div class="topbar">
-    <div class="topbar-logo">Mentoria <span>CEPRA</span>
-      <span style="font-size:.76rem;font-weight:400;color:rgba(255,255,255,.4);margin-left:8px;">Dashboard</span>
-    </div>
+    <div class="topbar-logo">Mentoria <b>CEPRA</b></div>
     <div class="topbar-right">
-      <div class="config-row">
-        <input id="sheets-url-input" type="text" placeholder="Cole a URL do Apps Script aqui…" oninput="checkSheetsUrl()">
-        <button class="btn-url" onclick="saveSheetsUrl()">Salvar</button>
-        <span class="sheets-badge off" id="sheets-badge">Desconectado</span>
+      <span id="form-prog-lbl" style="font-size:.8rem;color:rgba(255,255,255,.38)"></span>
+      <button class="btn-ghost" onclick="goHome()">← Início</button>
+    </div>
+  </div>
+  <div class="form-progress"><div class="form-progress-fill" id="fpb" style="width:0%"></div></div>
+  <div class="form-stage" id="form-stage">
+    <div class="form-slide" id="form-slide" style="animation:slideIn .4s cubic-bezier(.4,0,.2,1)"></div>
+  </div>
+  <div class="form-nav" id="form-nav">
+    <div class="nav-left">
+      <button class="btn-back" id="btn-back" onclick="prevQ()" style="display:none">← Voltar</button>
+      <span class="nav-info" id="nav-info"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="key-hint" id="key-hint"><kbd>Enter</kbd> continuar</span>
+      <button class="btn-next" id="btn-next" onclick="nextQ()">Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="s-dash" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">Mentoria <b>CEPRA</b> <span style="font-size:.72rem;color:rgba(255,255,255,.3);margin-left:8px">Dashboard</span></div>
+    <div class="topbar-right">
+      <div class="url-pill">
+        <input id="url-inp" type="text" placeholder="URL do Apps Script…" oninput="checkUrl()">
+        <button class="btn-su" onclick="saveUrl()">Salvar</button>
+        <span class="url-st off" id="url-st">Desconectado</span>
       </div>
-      <select class="student-select" id="student-select" onchange="loadStudent(this.value)"></select>
-      <button class="btn-pdf" onclick="exportPDF()">📄 Exportar PDF</button>
+      <select class="sel-stu" id="sel-stu" onchange="loadStu(this.value)"></select>
+      <button class="btn-pdf2" onclick="exportPDF()">📄 Exportar PDF</button>
       <button class="btn-ghost" onclick="goHome()">← Sair</button>
     </div>
   </div>
-  <div class="dash-container" id="dash-container"></div>
+  <div class="dash-body" id="dash-body"></div>
 </div>
 
 <script>
-// ══════════ SENHA ══════════
-const MENTOR_PASS = 'Cepra@140204';
+// ══════ CONFIG ══════
+const PASS='Cepra@140204';
+let SHEETS_URL=localStorage.getItem('cepra_url')||'';
 
-function openMentorModal() {
-  document.getElementById('modal-senha').style.display = 'block';
-  document.getElementById('senha-input').value = '';
-  document.getElementById('modal-error').textContent = '';
-  document.getElementById('senha-input').classList.remove('error');
-  setTimeout(() => document.getElementById('senha-input').focus(), 100);
+// ══════ AUTH ══════
+function openMentorModal(){document.getElementById('modal-pw').style.display='block';document.getElementById('pw-inp').value='';document.getElementById('pw-err').textContent='';setTimeout(()=>document.getElementById('pw-inp').focus(),100)}
+function closePwModal(e){if(e&&e.target!==document.querySelector('.modal-veil'))return;document.getElementById('modal-pw').style.display='none'}
+function togglePw(){const i=document.getElementById('pw-inp'),b=document.getElementById('pw-eye');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈'}
+function checkPw(){
+  const v=document.getElementById('pw-inp').value;
+  if(v===PASS){document.getElementById('modal-pw').style.display='none';showDash()}
+  else{const i=document.getElementById('pw-inp'),e=document.getElementById('pw-err'),b=document.getElementById('modal-box');
+    i.classList.add('err');e.textContent='Senha incorreta. Tente novamente.';b.classList.add('shake');
+    setTimeout(()=>{b.classList.remove('shake');i.classList.remove('err')},450);i.value='';i.focus()}
 }
-function closeMentorModal(e) {
-  if (e && e.target !== document.querySelector('.modal-overlay')) return;
-  document.getElementById('modal-senha').style.display = 'none';
+
+// ══════ SHEETS ══════
+function saveUrl(){SHEETS_URL=document.getElementById('url-inp').value.trim();localStorage.setItem('cepra_url',SHEETS_URL);checkUrl();showToast('✅ URL salva!','ok')}
+function checkUrl(){const v=(document.getElementById('url-inp')||{value:''}).value||SHEETS_URL;const ok=v.includes('script.google.com');const el=document.getElementById('url-st');if(el){el.className='url-st '+(ok?'on':'off');el.textContent=ok?'✓ Conectado':'Desconectado'}}
+function initUrl(){const i=document.getElementById('url-inp');if(i){i.value=SHEETS_URL;checkUrl()}}
+async function sendToSheets(payload){if(!SHEETS_URL)return false;try{await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'anamnese',payload})});return true}catch(e){return false}}
+
+// ══════ NAV ══════
+function goHome(){show('s-home')}
+function startForm(){show('s-form');resetForm();renderQ()}
+function showDash(){show('s-dash');buildSelect();loadStu(0);initUrl()}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+
+// ══════ TOAST ══════
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;setTimeout(()=>t.className=type,3000)}
+
+// ══════ SAMPLE DATA ══════
+const SAMPLES=[
+  {id:'s1',name:'Ana Beatriz Costa',initials:'AB',serie:'3º ano EM',escola:'Col. São Paulo',curso:'Medicina',area:'Biológicas/Saúde',email:'ana@email.com',tel:'(11) 98888-0001',nasc:'2006-03-15',cursoStatus:'Sim, tenho certeza',univ:'USP/FUVEST',quando:'Este ano',disciplinas:{Português:4,Matemática:3,Biologia:5,Física:2,Química:4,'História/Geo':4,Inglês:3},gosta:'Biologia',dificil:'Física',motivacao:4,sentimento:'Ansioso(a) mas motivado(a)',vocacional:['Biológicas/Saúde','Ciências'],schedule:{'Manhã':[0,0,1,1,0,1,1],'Tarde':[1,0,0,1,1,0,1],'Noite':[1,1,1,0,1,1,1]},atividades:[{name:'Aulas de Inglês',icon:'🌎',color:'#EDE9FE',iconColor:'#7C3AED',horario:'Seg/Qua 18h–20h',tipo:'Curso',tipoColor:'#7C3AED',tipoBg:'#EDE9FE'},{name:'Academia',icon:'💪',color:'#D1FAE5',iconColor:'#10B981',horario:'Ter/Qui 07h–08h',tipo:'Esporte',tipoColor:'#065F46',tipoBg:'#D1FAE5'}],ativ:['Esporte/Academia','Curso de idiomas'],ativDesc:'Inglês seg/qua 18h-20h, academia ter/qui 7h-8h',metodo:['Videoaulas','Exercícios/questões'],acesso:'Acesso fácil e estável',espera:['Plano de estudos organizado','Simulados e revisão'],obj1:'Passar em Medicina na FUVEST',obj2:'Subir nota em Física para 4',obj3:'Fazer 1 redação por semana',obs:'Tenho muita dificuldade em Física mas me esforço bastante!',laudo:'Não',dificSit:['Nenhuma'],alert:null,
+  insights:[{type:'good',icon:'✅',text:'Forte em Biologia e Química — base sólida para Medicina.'},{type:'warn',icon:'⚠️',text:'Física com nota baixa (2/5) — prioridade no plano de estudos.'},{type:'info',icon:'💡',text:'Motivação alta (4/5) e curso definido — foco em simulados e questões.'}],
+  plano:[{cor:'#0EA5A0',bold:'Física:',texto:' 5h semanais com exercícios comentados (FUVEST/UNICAMP)'},{cor:'#1A56DB',bold:'Matemática:',texto:' 3h semanais de reforço em funções e geometria'},{cor:'#10B981',bold:'Bio/Química:',texto:' Manter revisão semanal + resolução de provas'},{cor:'#F59E0B',bold:'Inglês:',texto:' Aproveitar curso para leitura científica'},{cor:'#7C3AED',bold:'Redação:',texto:' 1 redação/semana com correção temática ENEM'}]},
+  {id:'s2',name:'Carlos Eduardo Lima',initials:'CE',serie:'2º ano EM',escola:'E.E. Maria Auxiliadora',curso:'Engenharia de Software',area:'Tecnologia/TI',email:'carlos@email.com',tel:'(31) 97777-0002',nasc:'2007-08-22',cursoStatus:'Tenho algumas ideias',univ:'UFMG / PUC Minas',quando:'Próximo ano',disciplinas:{Português:2,Matemática:5,Biologia:3,Física:4,Química:3,'História/Geo':2,Inglês:4},gosta:'Matemática',dificil:'Português',motivacao:3,sentimento:'Indiferente por ora',vocacional:['Tecnologia/TI','Engenharias','Exatas'],schedule:{'Manhã':[0,0,0,0,0,1,1],'Tarde':[0,0,0,0,0,1,1],'Noite':[1,1,1,1,1,0,0]},atividades:[{name:'Estágio (TI)',icon:'💼',color:'#FEF3C7',iconColor:'#D97706',horario:'Seg–Sex 13h–17h',tipo:'Trabalho',tipoColor:'#92400E',tipoBg:'#FEF3C7'},{name:'Futebol',icon:'⚽',color:'#D1FAE5',iconColor:'#10B981',horario:'Sáb 09h–11h',tipo:'Esporte',tipoColor:'#065F46',tipoBg:'#D1FAE5'}],ativ:['Trabalho/Estágio','Esporte/Academia'],ativDesc:'Estágio seg-sex 13h-17h, futebol sáb 9h-11h',metodo:['Exercícios/questões','Resumos/mapas mentais'],acesso:'Acesso fácil e estável',espera:['Plano de estudos organizado','Organização de rotina'],obj1:'Não reprovar em Português',obj2:'Fazer simulado todo mês',obj3:'Melhorar redação ENEM',obs:'Fico muito cansado depois do estágio. Só consigo estudar à noite.',laudo:'Não',dificSit:['Nenhuma'],alert:'Carlos faz estágio 20h/semana — plano deve ser enxuto e focado no período noturno.',
+  insights:[{type:'good',icon:'✅',text:'Matemática e Física excelentes — ótima base para Engenharia.'},{type:'warn',icon:'⚠️',text:'Português e Humanas fracos — pode prejudicar redação no ENEM.'},{type:'info',icon:'💡',text:'Motivação média (3/5) — estratégia gamificada pode ajudar.'}],
+  plano:[{cor:'#F43F5E',bold:'Português/Redação:',texto:' 3h semanais (gramática e dissertação)'},{cor:'#F59E0B',bold:'História/Geo:',texto:' 2h semanais via mapas mentais'},{cor:'#0EA5A0',bold:'Projetos pessoais:',texto:' Reforçam motivação e currículo'},{cor:'#1A56DB',bold:'Simulados:',texto:' 1 simulado/quinzena nos fins de semana'}]},
+  {id:'s3',name:'Júlia Mendes',initials:'JM',serie:'1º ano EM',escola:'CEFET Contagem',curso:'Indecisa — explora opções',area:'Humanas',email:'julia@email.com',tel:'(31) 96666-0003',nasc:'2008-11-05',cursoStatus:'Ainda não sei',univ:'Ainda não sei',quando:'Em 2+ anos',disciplinas:{Português:4,Matemática:2,Biologia:3,Física:2,Química:2,'História/Geo':5,Inglês:3},gosta:'História',dificil:'Matemática',motivacao:2,sentimento:'Inseguro(a)',vocacional:['Humanas','Direito','Comunicação'],schedule:{'Manhã':[1,1,1,1,1,0,0],'Tarde':[0,0,0,0,0,1,1],'Noite':[0,1,0,1,0,0,0]},atividades:[{name:'Teatro',icon:'🎭',color:'#EDE9FE',iconColor:'#7C3AED',horario:'Ter/Qui 19h–21h',tipo:'Arte',tipoColor:'#5B21B6',tipoBg:'#EDE9FE'},{name:'Cuidados com irmão',icon:'🏠',color:'#FEF3C7',iconColor:'#D97706',horario:'Seg/Qua/Sex tarde',tipo:'Família',tipoColor:'#92400E',tipoBg:'#FEF3C7'}],ativ:['Teatro/Música/Arte','Cuidados familiares'],ativDesc:'Teatro ter/qui 19h-21h, cuida do irmão seg/qua/sex à tarde',metodo:['Lendo textos','Resumos/mapas mentais'],acesso:'Só pelo celular',espera:['Apoio vocacional','Apoio emocional'],obj1:'Descobrir qual curso quero fazer',obj2:'Melhorar em Matemática',obj3:'Estar mais motivada',obs:'Tenho muita ansiedade quando penso no vestibular e no futuro.',laudo:'Não',dificSit:['Saúde física/mental'],alert:'Júlia indicou ansiedade moderada. Conversa acolhedora recomendada na 1ª sessão.',
+  insights:[{type:'good',icon:'✅',text:'Excelente em Humanas e Português — perfil para Direito ou Comunicação.'},{type:'warn',icon:'⚠️',text:'Exatas muito fracas (2/5). Ainda no 1º ano — há tempo para reforço.'},{type:'info',icon:'💡',text:'Teatro desenvolve expressão oral — explorar carreiras que usem essa habilidade.'}],
+  plano:[{cor:'#7C3AED',bold:'Orientação vocacional:',texto:' 2 sessões de exploração antes de montar plano'},{cor:'#F59E0B',bold:'Matemática:',texto:' Reforço fundamental 3x/semana'},{cor:'#10B981',bold:'Humanas/Redação:',texto:' Manter e aprofundar — grande diferencial'},{cor:'#0EA5A0',bold:'Autoconhecimento:',texto:' Quiz vocacional + visita a cursos/profissionais'}]}
+];
+let students=[...SAMPLES];
+let curStu=0;
+let charts={};
+
+// ══════ FORM ENGINE ══════
+let qIdx=0,formData={},schedData={'Manhã':[0,0,0,0,0,0,0],'Tarde':[0,0,0,0,0,0,0],'Noite':[0,0,0,0,0,0,0]};
+
+// BLOCKS define visual progress sections
+const BLOCKS=[
+  {key:'id',    label:'Identificação',         icon:'🧑‍🎓', color:'#1A56DB'},
+  {key:'voc',   label:'Vocação & Objetivos',   icon:'🎯', color:'#7C3AED'},
+  {key:'desemp',label:'Desempenho Acadêmico',  icon:'📊', color:'#0EA5A0'},
+  {key:'rotina',label:'Rotina & Sono',         icon:'🌙', color:'#F59E0B'},
+  {key:'comport',label:'Comportamento de Estudo',icon:'🧠',color:'#10B981'},
+  {key:'emoc',  label:'Emocional & Ansiedade', icon:'💬', color:'#F43F5E'},
+  {key:'expect',label:'Expectativas',          icon:'🌟', color:'#0EA5A0'},
+];
+
+function resetForm(){qIdx=0;formData={notas:{}};schedData={'Manhã':[0,0,0,0,0,0,0],'Tarde':[0,0,0,0,0,0,0],'Noite':[0,0,0,0,0,0,0]}}
+
+const DISC=[
+  'Português I','Matemática I','Matemática II','Biologia',
+  'Física I','Física II','Química I','Química II',
+  'História','História da Arte','Geografia I','Inglês',
+  'Literatura','Redação','Filosofia','Sociologia','Educação Física'
+];
+
+const Qs=[
+  // BLOCO 1: IDENTIFICAÇÃO
+  {id:'nome',     block:'id',type:'text',  title:'Qual é o seu <em>nome completo</em>?',hint:'Como você gostaria de ser chamado(a) pelos mentores.',ph:'Seu nome completo',required:true},
+  {id:'_contato', block:'id',type:'group', title:'Seus <em>dados de contato</em>',hint:'Para que seu mentor possa entrar em contato.',required:true,fields:[{id:'nasc',label:'Data de nascimento',type:'date',required:true},{id:'email',label:'E-mail',type:'email',ph:'seu@email.com',required:true},{id:'tel',label:'WhatsApp',type:'text',ph:'(00) 00000-0000',required:true}]},
+  {id:'serie',    block:'id',type:'radio', title:'Qual é o seu <em>ano escolar</em> atual?',hint:'',opts:['1º ano EM','2º ano EM','3º ano EM','Cursinho/Pré-vestibular','Já concluí o EM'],required:true},
+
+  // BLOCO 2: VOCAÇÃO
+  {id:'cursoStatus',block:'voc',type:'radio',title:'Você já tem um <em>curso ou profissão</em> em mente?',hint:'Seja honesto — é o ponto de partida para a sua orientação!',opts:['Sim, tenho certeza','Tenho algumas ideias','Sei a área, mas não o curso'],required:true},
+  {id:'cursoNome',  block:'voc',type:'text', title:'Qual <em>curso ou profissão</em> você está pensando?',hint:'Pode ser mais de um — escreva o que vier à mente.',ph:'Ex: Medicina, Engenharia, Direito…',required:true},
+  {id:'areas',      block:'voc',type:'multi',title:'Quais <em>áreas</em> você mais gosta?',hint:'Marque todas que fizerem sentido para você.',opts:['Exatas','Biológicas/Saúde','Humanas','Linguagens','Tecnologia/TI','Engenharias','Negócios/Gestão','Direito','Educação','Comunicação/Mídia','Artes/Design','Esporte/Educação Física'],required:true},
+  {id:'quando',     block:'voc',type:'radio',title:'Quando pretende fazer o <em>vestibular/ENEM</em>?',hint:'',opts:['Este ano (menos de 12 meses)','Próximo ano','Em 2 anos ou mais','Ainda não sei'],required:true},
+  {id:'univ',       block:'voc',type:'text', title:'Tem alguma <em>universidade dos sonhos</em>?',hint:'Pode deixar em branco se ainda não souber.',ph:'Ex: USP, UNICAMP, UFMG, PUC…'},
+  {id:'modeloUniv', block:'voc',type:'radio',title:'Você prefere <em>universidade pública ou privada</em>?',hint:'',opts:['Pública — é meu foco principal','Privada — busco bolsa/financiamento','Tanto faz, quero o melhor curso','Ainda não pensei nisso'],required:true},
+
+  // BLOCO 3: DESEMPENHO
+  {id:'notas',       block:'desemp',type:'rating',   title:'Como você avalia seu <em>desempenho</em> em cada disciplina?',hint:'1 = muito fraco  ·  5 = ótimo  —  avalie todas as disciplinas que cursa.',subjects:DISC,required:true},
+  {id:'gostaDisc',   block:'desemp',type:'smartDisc',title:'Confirme suas <em>disciplinas de destaque</em>',hint:'Pré-selecionamos com base nas suas notas — ajuste se quiser.',required:true},
+  {id:'metodo',      block:'desemp',type:'multi',    title:'Como você <em>prefere estudar</em>?',hint:'Escolha até 2 métodos que funcionam melhor para você.',opts:['Lendo textos e apostilas','Assistindo videoaulas','Resolvendo exercícios e questões','Fazendo resumos e mapas mentais','Estudando em grupo','Ouvindo áudio/podcast','Flashcards e repetição espaçada'],max:2,required:true},
+  {id:'estiloLeitura',block:'desemp',type:'radio',   title:'Como você costuma <em>ler um texto</em> de estudo?',hint:'Escolha a opção mais honesta.',opts:['Leio uma vez e pronto','Releio as partes difíceis','Sublinho ou anoto enquanto leio','Faço resumo depois de ler','Só leio o que cai em prova'],required:true},
+  {id:'simulados',   block:'desemp',type:'radio',    title:'Com que frequência você faz <em>simulados ou questões</em>?',hint:'',opts:['Todo dia','Algumas vezes por semana','Uma vez por semana','De vez em quando','Raramente ou nunca'],required:true},
+  {id:'revisao',     block:'desemp',type:'radio',    title:'Como você lida com <em>revisão de conteúdo</em>?',hint:'',opts:['Tenho cronograma de revisão fixo','Reviso antes das provas','Reviso quando lembro','Não costumo revisar','Não sei como revisar bem'],required:true},
+
+  // BLOCO 4: ROTINA & SONO
+  {id:'horaDorme',   block:'rotina',type:'radio',title:'A que horas você costuma <em>dormir</em>?',hint:'Horário médio nos dias de semana.',opts:[
+    'Antes das 20h','Entre 20h e 21h','Entre 21h e 22h','Entre 22h e 23h',
+    'Entre 23h e meia-noite','Entre 0h e 1h','Entre 1h e 2h','Entre 2h e 3h',
+    'Entre 3h e 4h','Depois das 4h (virada)','Trabalho à noite / horário variável'
+  ],required:true},
+  {id:'horaAcorda',  block:'rotina',type:'radio',title:'A que horas você costuma <em>acordar</em>?',hint:'Dias de semana, com aula.',opts:['Antes das 5h','Entre 5h e 5h30','Entre 5h30 e 6h','Entre 6h e 6h30','Entre 6h30 e 7h','Depois das 7h'],required:true},
+  {id:'horasSono',   block:'rotina',type:'slider',title:'Quantas horas você dorme por <em>noite</em> em média?',hint:'Arraste para indicar suas horas de sono.',labels:['4 horas','12 horas'],min:4,max:12,step:1,unit:'h',required:true},
+  {id:'qualidadeSono',block:'rotina',type:'radio',title:'Como é a <em>qualidade</em> do seu sono?',hint:'',opts:['Durmo bem e acordo descansado(a)','Durmo mas não acordo bem','Tenho dificuldade para adormecer','Acordo várias vezes na noite','Tenho insônia frequente'],required:true},
+  {id:'ambiente',    block:'rotina',type:'radio',title:'Como é o seu <em>ambiente de estudo</em>?',hint:'Onde você costuma estudar em casa.',opts:['Tenho espaço próprio e silencioso','Estudo na sala, com barulho às vezes','Divido quarto e é difícil concentrar','Não tenho espaço fixo para estudar','Prefiro estudar fora de casa'],required:true},
+  {id:'acesso',      block:'rotina',type:'radio',title:'Como é o seu <em>acesso à internet</em> para estudar?',hint:'',opts:['Wi-Fi estável em casa','Wi-Fi mas é instável','Só dados móveis do celular','Acesso muito limitado'],required:true},
+  {id:'dispositivoEstudo',block:'rotina',type:'multi',title:'Quais <em>dispositivos</em> você usa para estudar?',hint:'Selecione todos que usa.',opts:['Celular','Notebook/Laptop','Computador desktop','Tablet','Só material impresso'],required:true},
+  {id:'ativ',        block:'rotina',type:'multi',title:'Você tem <em>atividades fixas</em> fora da escola?',hint:'Selecione tudo que se aplica.',opts:['Trabalho ou estágio','Esporte / academia','Curso de idiomas','Curso técnico ou profissionalizante','Teatro / música / arte','Cuidados com família ou irmãos','Atividade religiosa','Nenhuma'],required:true},
+  {id:'esporteDias', block:'rotina',type:'multi',title:'Quais <em>dias</em> você pratica esporte ou academia?',hint:'',opts:['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'],required:true,showIf:d=>d.ativ&&d.ativ.includes('Esporte / academia')},
+  {id:'ativDesc',    block:'rotina',type:'textarea',title:'Descreva os <em>horários</em> dessas atividades',hint:'Ex: Estágio seg–sex 13h–17h, academia ter/qui 19h–20h…',ph:'Descreva aqui os horários…',required:true,showIf:d=>d.ativ&&d.ativ.length>0&&!d.ativ.includes('Nenhuma')},
+  {id:'fimDeSemana', block:'rotina',type:'radio',title:'Como são seus <em>fins de semana</em> geralmente?',hint:'',opts:['Livres — posso estudar bastante','Tenho compromissos, mas sobra tempo','Cheios de compromissos, pouco tempo','Trabalho ou estágio no fim de semana','Muito variável, sem rotina'],required:true},
+  {id:'horasLivres', block:'rotina',type:'radio',title:'Estimando tudo, quantas <em>horas livres</em> você tem por semana para estudar?',hint:'Descontando escola, sono, refeições e atividades.',opts:['Menos de 5 horas','Entre 5 e 10 horas','Entre 10 e 15 horas','Mais de 15 horas'],required:true},
+
+  // BLOCO 5: COMPORTAMENTO DE ESTUDO
+  {id:'tempoFoco',    block:'comport',type:'radio',title:'Quanto tempo você consegue se concentrar <em>sem se distrair</em>?',hint:'Estudando sozinho(a), em condições normais.',opts:['Menos de 15 minutos','Entre 15 e 30 minutos','Entre 30 e 45 minutos','Entre 45 min e 1 hora','Mais de 1 hora'],required:true},
+  {id:'celularEstudo',block:'comport',type:'radio',title:'Como o <em>celular interfere</em> nos seus estudos?',hint:'',opts:['Deixo no silencioso e não atrapalha','Confiro vez ou outra, mas estudo bem','Interrompe muito, mas não consigo largar','É meu maior inimigo ao estudar'],required:true},
+  {id:'procrastinacao',block:'comport',type:'multi',title:'Quais dessas situações <em>acontecem com você</em>?',hint:'Marque todas que forem verdadeiras.',opts:['Deixo para estudar na véspera da prova','Começo a estudar mas paro logo','Fico arrumando o espaço antes de começar','Abro o caderno mas fico no celular','Assisto mais um vídeo antes de estudar','Coloco horário para estudar e cumpro','Tenho dificuldade de começar mas termino'],required:true},
+  {id:'procrastFreq', block:'comport',type:'radio',title:'Com que frequência você <em>procrastina</em> os estudos?',hint:'',opts:['Raramente','Às vezes','Frequentemente','Quase sempre','Sempre'],required:true},
+  {id:'planejamento',block:'comport',type:'radio',title:'Como você <em>organiza seus estudos</em>?',hint:'',opts:['Sigo um cronograma semanal fixo','Planejo no começo da semana','Estudo o que achar necessário no dia','Só estudo perto de provas','Não tenho organização nenhuma'],required:true},
+  {id:'errosProva',  block:'comport',type:'radio',title:'Quando você erra uma questão, o que você faz?',hint:'',opts:['Analiso o erro e busco entender o porquê','Releio o conteúdo mas sem focar no erro','Fico chateado(a) mas sigo em frente','Desanimo bastante quando erro muito','Ignoro e continuo sem revisar'],required:true},
+  {id:'ansiedadeProva',block:'comport',type:'radio',title:'Como você se sente <em>antes de uma prova</em>?',hint:'',opts:['Tranquilo(a) e confiante','Um pouco ansioso(a), mas controlado','Muito ansioso(a), prejudica meu desempenho','Trava e dá branco na hora da prova','Fico fisicamente mal de nervoso(a)'],required:true},
+  {id:'relacaoErro',  block:'comport',type:'radio',title:'Como você se relaciona com seus <em>erros e dificuldades</em>?',hint:'',opts:['Vejo como oportunidade de aprender','Aceito mas prefiro não lembrar','Me sinto inadequado(a) quando erro','Erro me faz querer desistir às vezes','Tenho dificuldade enorme de lidar com erros'],required:true},
+  {id:'memorizacao',  block:'comport',type:'radio',title:'Como é sua <em>memória para conteúdos</em> estudados?',hint:'',opts:['Memorizo rápido e retenho bem','Memorizo mas esqueço rápido','Preciso repetir várias vezes para fixar','Tenho muita dificuldade para memorizar','Varia muito dependendo do assunto'],required:true},
+  {id:'autodisciplina',block:'comport',type:'radio',title:'Como você avalia sua <em>autodisciplina</em> para estudar?',hint:'',opts:['Alta — estudo mesmo sem querer','Boa — cumpro a maioria dos planos','Média — depende muito do meu humor','Baixa — preciso de alguém me cobrando','Muito baixa — raramente estudo sozinho(a)'],required:true},
+  {id:'redeApoio',    block:'comport',type:'radio',title:'Você tem <em>apoio</em> nos estudos?',hint:'',opts:['Sim, tenho grupo de estudos fixo','Às vezes estudo com colegas','Tenho família que me apoia muito','Estudo sozinho(a) mas me sinto bem','Estudo sozinho(a) e me sinto desapoiado(a)'],required:true},
+  {id:'materialEstudo',block:'comport',type:'multi',title:'Quais <em>materiais</em> você usa para estudar?',hint:'Selecione todos que usa regularmente.',opts:['Caderno e caneta próprios','Apostila da escola','Livro didático','Plataformas online (YouTube, Descomplica…)','Aplicativos (Anki, Quizlet…)','Material de cursinho','Resolução de provas anteriores'],required:true},
+
+  // BLOCO 6: EMOCIONAL
+  {id:'sentimento',   block:'emoc',type:'radio',title:'Como você se sente em relação ao <em>futuro e vestibular</em>?',hint:'Não há resposta certa — seja honesto.',opts:['Animado(a) e confiante','Ansioso(a) mas motivado(a)','Inseguro(a) sobre o que escolher','Pressionado(a) por família/escola','Com medo de errar e decepcionar','Indiferente por enquanto'],required:true},
+  {id:'motivacao',    block:'emoc',type:'slider',title:'Como está sua <em>motivação</em> para estudar hoje?',hint:'Arraste para indicar seu nível atual.',labels:['😔 Desmotivado','🔥 Muito motivado'],min:1,max:5,step:1,required:true},
+  {id:'ansiedadeGeral',block:'emoc',type:'radio',title:'Você sente <em>ansiedade</em> com frequência?',hint:'De forma geral, não só com estudos.',opts:['Raramente me sinto ansioso(a)','Às vezes, mas controlo bem','Frequentemente, afeta meu dia a dia','Muito frequentemente, é difícil lidar','Sinto ansiedade intensa quase sempre'],required:true},
+  {id:'pressaoExt',   block:'emoc',type:'radio',title:'Como você lida com a <em>pressão de família</em> ou escola?',hint:'',opts:['Minha família é apoio, não pressão','Sinto pressão mas lido bem','A pressão me motiva','A pressão me paralisa às vezes','A pressão é excessiva e me faz mal'],required:true},
+  {id:'autoconfianca',block:'emoc',type:'radio',title:'Como está sua <em>autoconfiança</em> nos estudos?',hint:'',opts:['Alta — acredito que vou conseguir','Boa — confio em mim na maioria das vezes','Oscila muito dependendo do dia','Baixa — tenho muitas dúvidas sobre mim','Muito baixa — não acredito que consigo'],required:true},
+  {id:'dificSit',     block:'emoc',type:'multi',title:'Alguma situação <em>dificulta seus estudos</em>?',hint:'Pode marcar mais de um. Informação confidencial.',opts:['Saúde mental (ansiedade, depressão…)','Saúde física','Dificuldades financeiras em casa','Conflitos familiares','Falta de espaço ou ambiente adequado','Relacionamentos (amigos, namorado/a)','Nenhuma dificuldade específica'],required:true},
+  {id:'laudo',        block:'emoc',type:'radio',title:'Possui diagnóstico de <em>dificuldade de aprendizagem</em>?',hint:'Ex: TDAH, dislexia, TEA. Nos ajuda a adaptar a abordagem.',opts:['Sim — TDAH','Sim — Dislexia','Sim — TEA (autismo)','Sim — outro diagnóstico','Tenho suspeita, sem diagnóstico formal','Não tenho diagnóstico'],required:true},
+
+  // BLOCO 7: EXPECTATIVAS
+  {id:'espera',       block:'expect',type:'multi',title:'O que você <em>espera da mentoria</em>?',hint:'Selecione até 3 prioridades.',opts:['Plano de estudos organizado','Indicação de materiais e plataformas','Orientação vocacional','Técnicas de memorização','Simulados e resolução de provas','Apoio emocional e motivação','Organização de rotina semanal','Dicas de redação ENEM','Ajuda para decidir o curso'],max:3,required:true},
+  {id:'_objs',        block:'expect',type:'group',title:'Seus <em>3 maiores objetivos</em> nos próximos 6 meses',hint:'Seja específico — objetivos claros geram melhores planos.',required:true,fields:[{id:'obj1',label:'Objetivo 1',type:'text',ph:'Ex: Passar em Medicina na USP',required:true},{id:'obj2',label:'Objetivo 2',type:'text',ph:'Ex: Subir nota em Física para 4/5',required:true},{id:'obj3',label:'Objetivo 3',type:'text',ph:'Ex: Fazer 1 redação por semana'}]},
+  {id:'obs',          block:'expect',type:'textarea',title:'Há algo mais que gostaria de <em>compartilhar</em>?',hint:'Conte o que quiser — seu mentor lerá tudo com atenção.',ph:'Escreva à vontade. Pode ser uma dificuldade, um sonho, uma dúvida ou algo que não cabia nas perguntas…'},
+];
+
+function vQs(){return Qs.filter(q=>!q.showIf||q.showIf(formData))}
+
+// Smart pre-fill for discipline question
+function getSmartDisc(){
+  const n=formData.notas||{};
+  const entries=Object.entries(n).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  // Init gostas with top-scoring disciplines if empty
+  if((!formData.gostas||formData.gostas.length===0)){
+    const top=entries.filter(([,v])=>v>=4).map(([d])=>d);
+    formData.gostas=top.length?top:entries.slice(0,1).map(([d])=>d);
+    if(formData.gostas.length>0)formData.gosta=formData.gostas[0];
+  }
+  // Init dificeis with lowest-scoring disciplines if empty
+  if((!formData.dificeis||formData.dificeis.length===0)){
+    const bot=entries.filter(([,v])=>v<=2).map(([d])=>d);
+    formData.dificeis=bot.length?bot:[...entries].reverse().slice(0,1).map(([d])=>d);
+    if(formData.dificeis.length>0)formData.dificil=formData.dificeis[0];
+  }
 }
-function closeMentorModal() { document.getElementById('modal-senha').style.display = 'none'; }
-function toggleSenhaVisibility() {
-  const inp = document.getElementById('senha-input');
-  const btn = document.getElementById('eye-btn');
-  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
-  else { inp.type = 'password'; btn.textContent = '👁️'; }
+
+// Compute block progress
+function blockProgress(blockKey,currentIdx){
+  const vqs=vQs();
+  const blockQs=vqs.filter(q=>q.block===blockKey);
+  const blockStart=vqs.findIndex(q=>q.block===blockKey);
+  const doneInBlock=Math.max(0,currentIdx-blockStart);
+  return{done:doneInBlock,total:blockQs.length,pct:blockQs.length?Math.round(doneInBlock/blockQs.length*100):0};
 }
-function checkSenha() {
-  const val = document.getElementById('senha-input').value;
-  const errEl = document.getElementById('modal-error');
-  const inp = document.getElementById('senha-input');
-  if (val === MENTOR_PASS) {
-    document.getElementById('modal-senha').style.display = 'none';
-    showDashboard();
+
+function renderQ(){
+  const vqs=vQs(),q=vqs[qIdx],tot=vqs.length;
+  if(!q)return;
+  // Guard: only run if the form screen elements exist
+  const fpb=document.getElementById('fpb');
+  const slide=document.getElementById('form-slide');
+  if(!fpb||!slide)return;
+  // Auto pre-fill smart discipline
+  if(q.type==='smartDisc') getSmartDisc();
+  const pct=Math.round(qIdx/tot*100);
+  fpb.style.width=pct+'%';
+  const blk=BLOCKS.find(b=>b.key===q.block)||{label:q.block||'',icon:'',color:'#1A56DB'};
+  const bp=blockProgress(q.block,qIdx);
+  const progLbl=document.getElementById('form-prog-lbl');
+  const navInfo=document.getElementById('nav-info');
+  const btnBack=document.getElementById('btn-back');
+  const nb=document.getElementById('btn-next');
+  const keyHint=document.getElementById('key-hint');
+  if(progLbl)progLbl.textContent=pct+'% completo';
+  if(navInfo)navInfo.textContent=blk.icon+' '+blk.label+' · '+bp.done+'/'+bp.total;
+  if(btnBack)btnBack.style.display=qIdx>0?'':'none';
+  const isLast=qIdx===tot-1;
+  if(nb){nb.innerHTML=isLast?'Enviar Anamnese ✓':'Continuar →';nb.className='btn-next'+(isLast?' btn-submit':'');}
+  if(keyHint)keyHint.style.display=isLast?'none':'flex';
+  slide.style.animation='none';slide.offsetHeight;
+  slide.innerHTML=buildQ(q,blk,bp);
+  slide.style.animation='slideIn .4s cubic-bezier(.4,0,.2,1)';
+  setTimeout(()=>{
+    const inp=slide.querySelector('input[type=text],input[type=email]');
+    if(inp&&q.type!=='group')inp.focus();
+    const r=slide.querySelector('input[type=range]');if(r)updateSlider(r,q);
+  },60);
+  window.scrollTo(0,0);
+}
+
+function buildQ(q,blk,bp){
+  blk=blk||{label:q.block||'',icon:'',color:'#0EA5A0'};
+  bp=bp||{done:0,total:1,pct:0};
+  const blockBar=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px"><div style="flex:1;height:3px;background:#F1F5F9;border-radius:2px;overflow:hidden"><div style="height:100%;width:${bp.pct}%;background:${blk.color};transition:width .4s;border-radius:2px"></div></div><span style="font-size:.72rem;color:var(--ink3);white-space:nowrap">${blk.icon} ${blk.label}</span></div>`;
+  const n=`<div class="q-num"><div class="q-num-badge" style="background:${blk.color}22;color:${blk.color}">${qIdx+1}</div>${blk.icon} ${blk.label}</div>`;
+  const h=`${blockBar}${n}<h2 class="q-title">${q.title}</h2>${q.hint?`<p class="q-hint">${q.hint}</p>`:''}`;
+
+  if(q.type==='text')return h+`<input class="tf-input" id="qi" type="text" placeholder="${q.ph||''}" value="${formData[q.id]||''}" onkeydown="if(event.key==='Enter'){event.preventDefault();nextQ()}">`;
+  if(q.type==='textarea')return h+`<textarea class="tf-textarea" id="qi" placeholder="${q.ph||''}">${formData[q.id]||''}</textarea>`;
+  if(q.type==='group'){
+    const c=q.fields.length>2?'input-group':'';
+    return h+`<div class="${c}">${q.fields.map(f=>`<div class="input-field"><label>${f.label}</label><input type="${f.type||'text'}" id="fi-${f.id}" placeholder="${f.ph||''}" value="${formData[f.id]||''}" onkeydown="if(event.key==='Enter')nextQ()"></div>`).join('')}</div>`;
+  }
+  if(q.type==='radio'){
+    const opts=q.opts.map(o=>{const s=formData[q.id]===o;return`<div class="choice${s?' sel':''}" onclick="selR('${q.id}','${o}',this)"><div class="choice-radio"></div><span>${o}</span></div>`}).join('');
+    return h+`<div class="choice-grid c2">${opts}</div>`;
+  }
+  if(q.type==='multi'){
+    const opts=q.opts.map(o=>{const a=formData[q.id]||[];const s=a.includes(o);return`<div class="choice${s?' sel':''}" onclick="togM('${q.id}','${o}',${q.max||0},this)"><div class="choice-chk">${s?'✓':''}</div><span>${o}</span></div>`}).join('');
+    return h+`<div class="choice-grid c2">${opts}</div>${q.max?`<p style="font-size:.77rem;color:var(--ink3);margin-top:8px">Máximo ${q.max} opções</p>`:''}`;
+  }
+  if(q.type==='rating'){
+    const rows=q.subjects.map(s=>{const v=(formData.notas||{})[s]||0;const stars=[1,2,3,4,5].map(n=>`<div class="star${v>=n?' lit':''}" onclick="setStar('${s}',${n},this.parentElement)">${n}</div>`).join('');return`<div class="rating-row"><span class="rating-label">${s}</span><div class="stars">${stars}</div></div>`}).join('');
+    return h+`<div class="rating-table">${rows}</div>`;
+  }
+  if(q.type==='smartDisc'){
+    const n2=formData.notas||{};
+    // init arrays if empty
+    if(!formData.gostas||!Array.isArray(formData.gostas))formData.gostas=formData.gosta?[formData.gosta]:[];
+    if(!formData.dificeis||!Array.isArray(formData.dificeis))formData.dificeis=formData.dificil?[formData.dificil]:[];
+    return h+`
+      <div style="margin-bottom:22px">
+        <div style="font-size:.78rem;font-weight:600;color:#10B981;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">✅ Disciplinas favoritas — marque quantas quiser</div>
+        <div class="choice-grid c2">${DISC.map(d=>{const s2=(formData.gostas||[]).includes(d);const v=(n2[d]||0);const cor=v>=4?'#10B981':v>=3?'#F59E0B':'#F43F5E';return`<div class="choice${s2?' sel':''}" onclick="togSmartDisc('gostas','${d}',this)" style="${v>0?'border-left:3px solid '+cor:''}"><div class="choice-chk">${s2?'✓':''}</div><span>${d}${v>0?` <small style="color:${cor};font-weight:600">(${v}/5)</small>`:''}</span></div>`}).join('')}</div>
+      </div>
+      <div>
+        <div style="font-size:.78rem;font-weight:600;color:#F43F5E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">⚠️ Maiores dificuldades — marque quantas quiser</div>
+        <div class="choice-grid c2">${DISC.map(d=>{const s2=(formData.dificeis||[]).includes(d);const v=(n2[d]||0);const cor=v>=4?'#10B981':v>=3?'#F59E0B':'#F43F5E';return`<div class="choice${s2?' sel':''}" onclick="togSmartDisc('dificeis','${d}',this)" style="${v>0?'border-left:3px solid '+cor:''}"><div class="choice-chk">${s2?'✓':''}</div><span>${d}${v>0?` <small style="color:${cor};font-weight:600">(${v}/5)</small>`:''}</span></div>`}).join('')}</div>
+      </div>`;
+  }
+  if(q.type==='schedule'){
+    const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],ps=['Manhã','Tarde','Noite'];
+    const heads='<div></div>'+days.map(d=>`<div class="sched-h">${d}</div>`).join('');
+    const rows=ps.map(p=>`<div class="sched-period">${p}</div>`+days.map((_,i)=>{
+      const blocked=p==='Manhã'&&i<5;
+      const on=(schedData[p]||[])[i];
+      if(blocked)return`<div class="sched-cell" style="background:#F1F5F9;cursor:default;border-color:#E2E8F0" title="Escola 7h–12h35"><span style="font-size:.58rem;color:#94A3B8;display:flex;align-items:center;justify-content:center;height:100%">Escola</span></div>`;
+      return`<div class="sched-cell${on?' on':''}" onclick="togSched('${p}',${i},this)"></div>`;
+    }).join('')).join('');
+    return h+`<div style="font-size:.78rem;color:var(--ink3);margin-bottom:10px;padding:8px 12px;background:#FEF3C7;border-radius:8px;border-left:3px solid #F59E0B">🏫 Manhã seg–sex já bloqueada (escola 7h–12h35) — marque seus turnos livres</div><div class="sched-wrap"><div class="sched">${heads}${rows}</div></div>`;
+  }
+  if(q.type==='slider'){
+    const min=q.min||1,max=q.max||5,step=q.step||1,unit=q.unit||'';
+    const v=formData[q.id]||Math.round((min+max)/2);
+    const slDescs=unit==='h'?{4:'⚠️ Muito pouco sono',5:'⚠️ Abaixo do recomendado',6:'😐 Sono razoável',7:'✅ Sono adequado (recomendado)',8:'✅ Sono bom',9:'😴 Sono ótimo',10:'😴 Dormindo bastante'}:{1:'😔 Muito desmotivado',2:'😟 Pouco motivado',3:'😐 Motivação média',4:'😊 Bem motivado',5:'🔥 Extremamente motivado!'};
+    return h+`<div class="slider-wrap"><div class="slider-val" id="slv">${v}${unit}</div><div class="slider-desc" id="sld">${slDescs[v]||''}</div><div style="margin:14px 0 8px"><input type="range" min="${min}" max="${max}" step="${step}" value="${v}" id="qsl" oninput="updateSliderFull(this,${min},${max},'${unit}',${JSON.stringify(slDescs)})"></div><div class="slider-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div></div>`;
+  }
+  return h;
+}
+
+function togSmartDisc(key,val,el){
+  if(!formData[key])formData[key]=[];
+  if(el.classList.contains('sel')){
+    el.classList.remove('sel');el.querySelector('.choice-chk').textContent='';
+    formData[key]=formData[key].filter(x=>x!==val);
   } else {
-    inp.classList.add('error');
-    errEl.textContent = 'Senha incorreta. Tente novamente.';
-    document.getElementById('modal-box').classList.add('shake');
-    setTimeout(() => {
-      document.getElementById('modal-box').classList.remove('shake');
-      inp.classList.remove('error');
-    }, 500);
-    inp.value = '';
-    inp.focus();
+    el.classList.add('sel');el.querySelector('.choice-chk').textContent='✓';
+    if(!formData[key].includes(val))formData[key].push(val);
   }
+  // Keep legacy single fields in sync for PDF/report compatibility
+  if(key==='gostas'&&formData[key].length>0)formData.gosta=formData[key][0];
+  if(key==='dificeis'&&formData[key].length>0)formData.dificil=formData[key][0];
 }
 
-// ══════════ GOOGLE SHEETS ══════════
-let SHEETS_URL = localStorage.getItem('cepra_sheets_url') || '';
-
-function saveSheetsUrl() {
-  SHEETS_URL = document.getElementById('sheets-url-input').value.trim();
-  localStorage.setItem('cepra_sheets_url', SHEETS_URL);
-  checkSheetsUrl();
-  showToast('✅ URL do Google Sheets salva!', 'success');
+function selR(k,v,el){el.closest('.choice-grid').querySelectorAll('.choice').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');formData[k]=v;setTimeout(nextQ,280)}
+function togM(k,v,max,el){if(!formData[k])formData[k]=[];if(el.classList.contains('sel')){el.classList.remove('sel');el.querySelector('.choice-chk').textContent='';formData[k]=formData[k].filter(x=>x!==v)}else{if(max&&formData[k].length>=max){showToast('Máximo '+max+' opções','err');return}el.classList.add('sel');el.querySelector('.choice-chk').textContent='✓';formData[k].push(v)}}
+function setStar(s,v,c){c.querySelectorAll('.star').forEach((st,i)=>st.classList.toggle('lit',i<v));if(!formData.notas)formData.notas={};formData.notas[s]=v}
+function togSched(p,i,el){schedData[p]=schedData[p]||[0,0,0,0,0,0,0];schedData[p][i]=schedData[p][i]?0:1;el.classList.toggle('on');formData.schedule=schedData}
+function updateSlider(el,q){
+  // Legacy compatibility
+  const v=parseInt(el.value);
+  const min=q&&q.min?q.min:1,max=q&&q.max?q.max:5,unit=q&&q.unit?q.unit:'';
+  const pct=((v-min)/(max-min))*100;
+  el.style.setProperty('--pct',pct+'%');
+  const ve=document.getElementById('slv');const de=document.getElementById('sld');
+  if(ve)ve.textContent=v+unit;
+  const curQ=vQs()[qIdx];
+  if(curQ&&curQ.id)formData[curQ.id]=v;
+  if(curQ&&curQ.id==='motivacao')formData.motivacao=v;
 }
-function checkSheetsUrl() {
-  const v = (document.getElementById('sheets-url-input')||{value:''}).value.trim() || SHEETS_URL;
-  const ok = v.includes('script.google.com');
-  const b = document.getElementById('sheets-badge');
-  if (b) { b.className = 'sheets-badge '+(ok?'ok':'off'); b.textContent = ok?'✓ Conectado':'Desconectado'; }
-}
-function initSheetsInput() {
-  const inp = document.getElementById('sheets-url-input');
-  if (inp) { inp.value = SHEETS_URL; checkSheetsUrl(); }
-}
-async function saveToSheets(payload) {
-  if (!SHEETS_URL) return false;
-  try {
-    await fetch(SHEETS_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ type:'anamnese', payload })
-    });
-    return true;
-  } catch(e) { return false; }
+function updateSliderFull(el,min,max,unit,descs){
+  const v=parseInt(el.value);
+  const pct=((v-min)/(max-min))*100;
+  el.style.setProperty('--pct',pct+'%');
+  const ve=document.getElementById('slv');const de=document.getElementById('sld');
+  if(ve)ve.textContent=v+unit;
+  if(de)de.textContent=descs[v]||'';
+  const curQ=vQs()[qIdx];
+  if(curQ&&curQ.id)formData[curQ.id]=v;
 }
 
-// ══════════ NAVIGATION ══════════
-function goHome() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-home').classList.add('active');
-}
-function startForm() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-form').classList.add('active');
-  currentStep = 0; formData = {};
-  scheduleData = {"Manhã":[0,0,0,0,0,0,0],"Tarde":[0,0,0,0,0,0,0],"Noite":[0,0,0,0,0,0,0]};
-  renderStep();
-}
-function showDashboard() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-dashboard').classList.add('active');
-  rebuildSelect(); loadStudent(0); initSheetsInput();
-}
-function rebuildSelect() {
-  const sel = document.getElementById('student-select');
-  sel.innerHTML = students.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('');
-}
-function loadStudent(idx) {
-  currentStudentIdx = parseInt(idx);
-  renderDashboard(students[currentStudentIdx]);
+function saveQ(){
+  const q=vQs()[qIdx];if(!q)return;
+  if(q.type==='text'){const i=document.getElementById('qi');if(i)formData[q.id]=i.value.trim()}
+  if(q.type==='textarea'){const i=document.getElementById('qi');if(i)formData[q.id]=i.value.trim()}
+  if(q.type==='group'){q.fields.forEach(f=>{const i=document.getElementById('fi-'+f.id);if(i)formData[f.id]=i.value.trim()})}
+  if(q.type==='slider'){const i=document.getElementById('qsl');if(i)formData[q.id]=parseInt(i.value)}
+  formData.schedule=schedData;
 }
 
-// ══════════ TOAST ══════════
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'show '+ type;
-  setTimeout(()=>t.className=type, 3200);
-}
-
-// ══════════ SAMPLE DATA ══════════
-const SAMPLE_STUDENTS = [
-  { id:'s1', name:"Ana Beatriz Costa", initials:"AB", serie:"3º ano EM", escola:"Col. São Paulo",
-    curso:"Medicina", area:"Biológicas", email:"ana@email.com", tel:"(11) 98888-0001",
-    disciplinas:{"Português":4,"Matemática":3,"Biologia":5,"Física":2,"Química":4,"História/Geo":4,"Inglês":3},
-    motivacao:4, vocacional:["Biológicas","Saúde","Ciências","Inglês"],
-    schedule:{"Manhã":[0,0,1,1,0,1,1],"Tarde":[1,0,0,1,1,0,1],"Noite":[1,1,1,0,1,1,1]},
-    atividades:[
-      {name:"Aulas de Inglês",icon:"🌎",color:"#EDE9FE",iconColor:"#7C3AED",horario:"Seg/Qua 18h–20h",tipo:"Curso",tipoColor:"#7C3AED",tipoBg:"#EDE9FE"},
-      {name:"Academia",icon:"💪",color:"#D1FAE5",iconColor:"#10B981",horario:"Ter/Qui 07h–08h",tipo:"Esporte",tipoColor:"#065F46",tipoBg:"#D1FAE5"},
-    ],
-    alert:null,
-    insights:[
-      {type:"good",icon:"✅",text:"Forte em Biologia e Química — base sólida para Medicina."},
-      {type:"warn",icon:"⚠️",text:"Física com nota baixa (2/5) — prioridade no plano de estudos."},
-      {type:"info",icon:"💡",text:"Motivação alta (4/5) e curso definido — foco em simulados e questões."},
-    ],
-    plano:[
-      {cor:"#0EA5A0",bold:"Física:",texto:" 5h semanais com exercícios comentados (FUVEST/UNICAMP)"},
-      {cor:"#1A56DB",bold:"Matemática:",texto:" 3h semanais de reforço em funções e geometria"},
-      {cor:"#10B981",bold:"Bio/Química:",texto:" Manter revisão semanal + resolução de provas"},
-      {cor:"#F59E0B",bold:"Inglês:",texto:" Aproveitar curso para leitura científica"},
-      {cor:"#7C3AED",bold:"Redação:",texto:" 1 redação/semana com correção temática ENEM"},
-    ]
-  },
-  { id:'s2', name:"Carlos Eduardo Lima", initials:"CE", serie:"2º ano EM", escola:"E.E. Maria Auxiliadora",
-    curso:"Engenharia de Software", area:"Tecnologia", email:"carlos@email.com", tel:"(31) 97777-0002",
-    disciplinas:{"Português":2,"Matemática":5,"Biologia":3,"Física":4,"Química":3,"História/Geo":2,"Inglês":4},
-    motivacao:3, vocacional:["Tecnologia","Engenharias","Exatas"],
-    schedule:{"Manhã":[0,0,0,0,0,1,1],"Tarde":[0,0,0,0,0,1,1],"Noite":[1,1,1,1,1,0,0]},
-    atividades:[
-      {name:"Estágio (TI)",icon:"💼",color:"#FEF3C7",iconColor:"#D97706",horario:"Seg–Sex 13h–17h",tipo:"Trabalho",tipoColor:"#92400E",tipoBg:"#FEF3C7"},
-      {name:"Futebol",icon:"⚽",color:"#D1FAE5",iconColor:"#10B981",horario:"Sáb 09h–11h",tipo:"Esporte",tipoColor:"#065F46",tipoBg:"#D1FAE5"},
-    ],
-    alert:"Carlos faz estágio 20h/semana — plano deve ser enxuto e focado no período noturno.",
-    insights:[
-      {type:"good",icon:"✅",text:"Matemática e Física excelentes — ótima base para Engenharia."},
-      {type:"warn",icon:"⚠️",text:"Português e Humanas fracos — pode prejudicar redação no ENEM."},
-      {type:"warn",icon:"⚠️",text:"Estágio consome tarde inteira seg–sex. Disponível apenas à noite."},
-      {type:"info",icon:"💡",text:"Motivação média (3/5) — estratégia gamificada pode ajudar."},
-    ],
-    plano:[
-      {cor:"#F43F5E",bold:"Português/Redação:",texto:" 3h semanais (gramática e dissertação)"},
-      {cor:"#F59E0B",bold:"História/Geo:",texto:" 2h semanais via mapas mentais"},
-      {cor:"#0EA5A0",bold:"Projetos pessoais:",texto:" Reforçam motivação e currículo"},
-      {cor:"#1A56DB",bold:"Simulados:",texto:" 1 simulado/quinzena nos fins de semana"},
-    ]
-  },
-  { id:'s3', name:"Júlia Mendes", initials:"JM", serie:"1º ano EM", escola:"CEFET Contagem",
-    curso:"Indecisa — explora opções", area:"Múltiplas", email:"julia@email.com", tel:"(31) 96666-0003",
-    disciplinas:{"Português":4,"Matemática":2,"Biologia":3,"Física":2,"Química":2,"História/Geo":5,"Inglês":3},
-    motivacao:2, vocacional:["Humanas","Comunicação","Direito","Artes"],
-    schedule:{"Manhã":[1,1,1,1,1,0,0],"Tarde":[0,0,0,0,0,1,1],"Noite":[0,1,0,1,0,0,0]},
-    atividades:[
-      {name:"Teatro",icon:"🎭",color:"#EDE9FE",iconColor:"#7C3AED",horario:"Ter/Qui 19h–21h",tipo:"Arte",tipoColor:"#5B21B6",tipoBg:"#EDE9FE"},
-      {name:"Cuidados com irmão",icon:"🏠",color:"#FEF3C7",iconColor:"#D97706",horario:"Seg/Qua/Sex tarde",tipo:"Família",tipoColor:"#92400E",tipoBg:"#FEF3C7"},
-    ],
-    alert:"Júlia indicou ansiedade moderada e dificuldade em Exatas. Conversa acolhedora recomendada na 1ª sessão.",
-    insights:[
-      {type:"good",icon:"✅",text:"Excelente em Humanas e Português — perfil para Direito ou Comunicação."},
-      {type:"warn",icon:"⚠️",text:"Exatas muito fracas (2/5). Ainda no 1º ano — há tempo para reforço."},
-      {type:"warn",icon:"⚠️",text:"Motivação baixa (2/5) — recomendado exercício de autoconhecimento."},
-      {type:"info",icon:"💡",text:"Teatro desenvolve expressão oral — explorar carreiras que usem essa habilidade."},
-    ],
-    plano:[
-      {cor:"#7C3AED",bold:"Orientação vocacional:",texto:" 2 sessões de exploração antes de montar plano"},
-      {cor:"#F59E0B",bold:"Matemática:",texto:" Reforço fundamental 3x/semana"},
-      {cor:"#10B981",bold:"Humanas/Redação:",texto:" Manter e aprofundar — grande diferencial"},
-      {cor:"#0EA5A0",bold:"Autoconhecimento:",texto:" Quiz vocacional + visita a cursos/profissionais"},
-    ]
+function isQAnswered(q){
+  if(!q.required)return true;
+  if(q.type==='text'){const i=document.getElementById('qi');return i&&i.value.trim().length>0;}
+  if(q.type==='textarea'){const i=document.getElementById('qi');return true;} // optional ok
+  if(q.type==='radio')return!!formData[q.id];
+  if(q.type==='multi')return!!(formData[q.id]&&formData[q.id].length>0);
+  if(q.type==='rating'){const n=formData.notas||{};return Object.values(n).some(v=>v>0);}
+  if(q.type==='smartDisc')return!!(formData.gostas&&formData.gostas.length>0&&formData.dificeis&&formData.dificeis.length>0);
+  if(q.type==='slider')return true; // slider always has a value
+  if(q.type==='schedule')return true; // optional
+  if(q.type==='group'){
+    if(!q.fields)return true;
+    const reqFields=q.fields.filter(f=>f.required);
+    return reqFields.every(f=>{const i=document.getElementById('fi-'+f.id);return i&&i.value.trim().length>0;});
   }
-];
-let students = [...SAMPLE_STUDENTS];
-let currentStudentIdx = 0;
-let radarChart=null, donutChart=null, scoreChart=null;
+  return true;
+}
 
-// ══════════ PDF EXPORT ══════════
-async function exportPDF() {
-  const s = students[currentStudentIdx];
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
-  const W=210, M=15, CW=W-M*2;
-
-  // Header
-  doc.setFillColor(15,27,45); doc.roundedRect(M,12,CW,28,4,4,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(255,255,255);
-  doc.text('Mentoria CEPRA — Ficha do Aluno', M+7, 23);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(150,200,240);
-  doc.text('Sistema de Mentoria Educacional', M+7, 30);
-  doc.text('Emitido: '+new Date().toLocaleDateString('pt-BR'), W-M-42, 30);
-
-  let y = 48;
-  const RH=7;
-
-  // Info pessoal
-  doc.setFillColor(228,240,255); doc.roundedRect(M,y,CW,26,3,3,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(15,27,45);
-  doc.text(s.name, M+5, y+7);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(70,90,120);
-  doc.text(`Série: ${s.serie}   |   Escola: ${s.escola}`, M+5, y+13);
-  doc.text(`Curso: ${s.curso}   |   Área: ${s.area}`, M+5, y+19);
-  doc.text(`E-mail: ${s.email||'—'}   |   WhatsApp: ${s.tel||'—'}`, M+5, y+25);
-  y += 32;
-
-  // Desempenho
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(15,27,45);
-  doc.text('Desempenho por Disciplina (1–5)', M, y); y += 5;
-  const discs = Object.entries(s.disciplinas);
-  const cw2 = Math.floor(CW/2);
-  discs.forEach(([d,v],i) => {
-    const cx = M+(i%2)*cw2, cy = y+Math.floor(i/2)*RH;
-    doc.setFillColor(242,246,252); doc.rect(cx,cy,cw2-3,RH-1,'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(50,70,100);
-    doc.text(d, cx+2, cy+4.5);
-    const bw=(cw2-42)*v/5;
-    doc.setFillColor(205,235,242); doc.rect(cx+cw2-39,cy+1.5,cw2-42,RH-4,'F');
-    doc.setFillColor(14,165,160); doc.rect(cx+cw2-39,cy+1.5,bw,RH-4,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(15,27,45);
-    doc.text(String(v), cx+cw2-9, cy+4.5);
-  });
-  y += Math.ceil(discs.length/2)*RH+9;
-
-  // Motivação
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(15,27,45);
-  doc.text('Motivação: '+s.motivacao+'/5', M, y);
-  const mc=s.motivacao>=4?[16,185,129]:s.motivacao>=3?[245,158,11]:[244,63,94];
-  doc.setFillColor(...mc); doc.roundedRect(M+28,y-4,(CW-38)*s.motivacao/5,5,2,2,'F');
-  doc.setFillColor(226,232,240); doc.roundedRect(M+28+(CW-38)*s.motivacao/5,y-4,(CW-38)*(1-s.motivacao/5),5,2,2,'F');
-  y+=8;
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(70,90,120);
-  doc.text('Áreas de interesse: '+((s.vocacional||[]).join(' · ')||'—'), M, y); y+=10;
-
-  // Heatmap
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(15,27,45);
-  doc.text('Disponibilidade Semanal', M, y); y+=5;
-  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'], periods=['Manhã','Tarde','Noite'];
-  const lw=18, cw3=Math.floor((CW-lw)/7), ch=6.5;
-  days.forEach((d,i)=>{ doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(100,116,139); doc.text(d,M+lw+i*cw3+cw3/2-2.5,y+3); }); y+=5;
-  periods.forEach(p=>{
-    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(50,70,100); doc.text(p,M,y+ch/2+1);
-    days.forEach((_,i)=>{
-      const on=(s.schedule[p]||[])[i];
-      doc.setFillColor(on?14:238,on?165:244,on?160:250);
-      doc.roundedRect(M+lw+i*cw3+0.5,y+0.5,cw3-1,ch-1,1.2,1.2,'F');
-      if(on){doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);doc.text('✓',M+lw+i*cw3+cw3/2-1.5,y+ch/2+1);}
-    }); y+=ch+1;
-  }); y+=8;
-
-  // Atividades
-  if(s.atividades.length){
-    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(15,27,45);
-    doc.text('Atividades Extracurriculares', M, y); y+=5;
-    s.atividades.forEach(a=>{
-      doc.setFillColor(244,247,252); doc.roundedRect(M,y,CW,8.5,2,2,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(15,27,45); doc.text(a.icon+' '+a.name,M+3,y+5.5);
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.text(a.horario,M+75,y+5.5);
-      doc.setFillColor(228,242,255); doc.roundedRect(M+CW-24,y+1.5,22,5.5,1.5,1.5,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(26,86,219); doc.text(a.tipo,M+CW-22,y+5.5);
-      y+=10;
-    }); y+=3;
+function nextQ(){
+  saveQ();
+  const vqs=vQs();
+  const q=vqs[qIdx];
+  if(q&&q.required&&!isQAnswered(q)){
+    const nb=document.getElementById('btn-next');
+    if(nb){
+      nb.style.transform='translateX(-6px)';
+      setTimeout(()=>{if(nb)nb.style.transform=''},180);
+      setTimeout(()=>{if(nb){nb.style.transform='translateX(6px)';setTimeout(()=>{if(nb)nb.style.transform=''},180)}},200);
+    }
+    showToast('⚠️ Responda esta pergunta para continuar','err');
+    return;
   }
-
-  // Insights
-  if(y>230){doc.addPage();y=18;}
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(15,27,45);
-  doc.text('Insights do Mentor', M, y); y+=5;
-  const ic={good:[209,250,229,6,95,70],warn:[254,243,199,146,64,14],info:[237,233,254,91,33,182]};
-  s.insights.forEach(ins=>{
-    const c=ic[ins.type]||ic.info;
-    doc.setFillColor(c[0],c[1],c[2]); doc.roundedRect(M,y,CW,8.5,2,2,'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(c[3],c[4],c[5]);
-    doc.text(doc.splitTextToSize(ins.icon+' '+ins.text,CW-6)[0],M+3,y+5.5); y+=10;
-  }); y+=5;
-
-  // Plano
-  if(y>235){doc.addPage();y=18;}
-  doc.setFillColor(237,246,255); doc.roundedRect(M,y,CW,11+s.plano.length*8.5,3,3,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(15,27,45);
-  doc.text('Plano de Estudos Sugerido — '+s.name.split(' ')[0], M+5, y+7); y+=13;
-  s.plano.forEach(p=>{
-    const h=p.cor.replace('#',''), r=parseInt(h.substr(0,2),16), g2=parseInt(h.substr(2,2),16), b=parseInt(h.substr(4,2),16);
-    doc.setFillColor(r,g2,b); doc.circle(M+8,y+2,1.8,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(15,27,45); doc.text(p.bold,M+13,y+3.5);
-    const bw2=doc.getTextWidth(p.bold);
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,100,130); doc.text(p.texto,M+13+bw2+0.5,y+3.5);
-    y+=8.5;
-  });
-
-  // Footer
-  doc.setFontSize(7); doc.setTextColor(160,170,185); doc.setFont('helvetica','italic');
-  doc.text('Documento confidencial — Mentoria CEPRA · uso exclusivo da equipe de mentoria',M,287);
-  doc.text('Pág. 1',W-M-10,287);
-
-  doc.save(`CEPRA_${s.name.replace(/\s+/g,'_')}.pdf`);
-  showToast('📄 PDF exportado com sucesso!','success');
+  if(qIdx>=vqs.length-1){submitForm();return;}
+  const slide=document.getElementById('form-slide');
+  if(!slide)return;
+  slide.style.animation='slideOut .26s cubic-bezier(.4,0,.2,1) forwards';
+  setTimeout(()=>{qIdx++;renderQ()},240);
 }
+function prevQ(){saveQ();if(qIdx<=0)return;qIdx--;renderQ()}
 
-// ══════════ FORM ENGINE ══════════
-let currentStep=0, formData={}, scheduleData={};
-const STEPS=6;
-const stepDefs=[
-  {badge:"Passo 1 de 6",icon:"🧑‍🎓",title:"Identificação",desc:"Vamos começar conhecendo um pouco sobre você!"},
-  {badge:"Passo 2 de 6",icon:"🎯",title:"Objetivos & Vocação",desc:"O que você sonha para o seu futuro?"},
-  {badge:"Passo 3 de 6",icon:"📚",title:"Hábitos de Estudo",desc:"Como você se sai nas disciplinas?"},
-  {badge:"Passo 4 de 6",icon:"🗓️",title:"Disponibilidade & Rotina",desc:"Quando você tem tempo para estudar?"},
-  {badge:"Passo 5 de 6",icon:"💬",title:"Emocional & Motivação",desc:"Como você está se sentindo nessa jornada?"},
-  {badge:"Passo 6 de 6",icon:"📝",title:"Expectativas",desc:"O que você espera da mentoria?"},
-];
-
-function renderStep(){
-  document.getElementById('progress-fill').style.width=(currentStep/STEPS*100)+'%';
-  let dots=''; for(let i=0;i<STEPS;i++) dots+=`<div class="step-dot ${i<currentStep?'done':i===currentStep?'active':''}"></div>`;
-  document.getElementById('step-indicator').innerHTML=dots;
-  const d=stepDefs[currentStep];
-  document.getElementById('step-content').innerHTML=`<div class="step-card">
-    <div class="step-badge">${d.icon} ${d.badge}</div>
-    <h1 class="step-title">${d.title}</h1><p class="step-desc">${d.desc}</p>
-    <div class="divider"></div>${getStepBody(currentStep)}
-    <div class="step-nav">
-      ${currentStep>0?'<button class="btn-prev" onclick="prevStep()">← Anterior</button>':'<div></div>'}
-      <span class="step-counter">${currentStep+1} / ${STEPS}</span>
-      ${currentStep<STEPS-1
-        ?'<button class="btn-next" onclick="nextStep()">Próximo →</button>'
-        :'<button class="btn-next" onclick="submitForm()" style="background:linear-gradient(135deg,#10B981,#0EA5A0)">Enviar Anamnese ✓</button>'}
-    </div></div>`;
-  if(currentStep===4){const sl=document.getElementById('slider-motivacao');if(sl)updateSlider(sl);}
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function chips(key,opts,single,max=0){
-  return opts.map(o=>{
-    const sel=single?(formData[key]===o):(formData[key]||[]).includes(o);
-    const fn=single?`selChip('${key}','${o}',this)`:max?`togMax('${key}','${o}',${max},this)`:`togChip('${key}','${o}',this)`;
-    return `<div class="chip${sel?' selected':''}" onclick="${fn}">${o}</div>`;
-  }).join('');
-}
-function selChip(key,val,el){el.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');formData[key]=val;}
-function togChip(key,val,el){el.classList.toggle('selected');if(!formData[key])formData[key]=[];if(el.classList.contains('selected')){if(!formData[key].includes(val))formData[key].push(val);}else{formData[key]=formData[key].filter(v=>v!==val);}}
-function togMax(key,val,max,el){if(!formData[key])formData[key]=[];if(el.classList.contains('selected')){el.classList.remove('selected');formData[key]=formData[key].filter(v=>v!==val);}else{if(formData[key].length>=max)return;el.classList.add('selected');if(!formData[key].includes(val))formData[key].push(val);}}
-function setRating(domId,key,v){document.querySelectorAll(`#stars-${domId} .star-btn`).forEach((b,i)=>b.classList.toggle('active',i<v));if(!formData.notas)formData.notas={};formData.notas[key]=v;}
-function updateSlider(el){const v=parseInt(el.value),p=((v-1)/4)*100;el.style.setProperty('--pct',p+'%');const e=document.getElementById('slider-val');if(e)e.textContent=v+'/5';formData.motivacao=v;}
-function toggleSchedule(period,idx,el){if(!scheduleData[period])scheduleData[period]=[0,0,0,0,0,0,0];scheduleData[period][idx]=scheduleData[period][idx]?0:1;el.classList.toggle('active');formData.schedule=scheduleData;}
-
-function renderScheduleGrid(){
-  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],ps=['Manhã','Tarde','Noite'];
-  let h='<div class="schedule-grid"><div class="sched-head"></div>'+days.map(d=>`<div class="sched-head">${d}</div>`).join('');
-  ps.forEach(p=>{h+=`<div class="sched-label">${p}</div>`;days.forEach((_,i)=>h+=`<div class="sched-cell${(scheduleData[p]||[])[i]?' active':''}" onclick="toggleSchedule('${p}',${i},this)"></div>`);});
-  return h+'</div>';
-}
-
-function getStepBody(s){
-  switch(s){
-    case 0:return`
-      <div class="q-block"><label class="q-label">Nome completo <span class="req">*</span></label><input type="text" id="f-nome" placeholder="Seu nome completo" value="${formData.nome||''}"></div>
-      <div class="two-col">
-        <div class="q-block"><label class="q-label">Data de nascimento</label><input type="date" id="f-nasc" value="${formData.nasc||''}"></div>
-        <div class="q-block"><label class="q-label">E-mail</label><input type="email" id="f-email" placeholder="seu@email.com" value="${formData.email||''}"></div>
-      </div>
-      <div class="two-col">
-        <div class="q-block"><label class="q-label">WhatsApp</label><input type="text" id="f-tel" placeholder="(00) 00000-0000" value="${formData.tel||''}"></div>
-        <div class="q-block"><label class="q-label">Escola</label><input type="text" id="f-escola" placeholder="Nome da escola" value="${formData.escola||''}"></div>
-      </div>
-      <div class="q-block"><label class="q-label">Ano/Série atual <span class="req">*</span></label>
-        <div class="chips">${chips('serie',["1º ano EM","2º ano EM","3º ano EM","Cursinho/Pré-vestibular","Já concluí"],true)}</div>
-      </div>`;
-    case 1:return`
-      <div class="q-block"><label class="q-label">Você já tem curso ou profissão em mente?</label>
-        <div class="chips">${chips('cursoStatus',["Sim, tenho certeza","Tenho algumas ideias","Sei a área, não o curso","Ainda não sei"],true)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Se sim, qual curso ou área?</label>
-        <input type="text" id="f-cursoNome" placeholder="Ex: Medicina, Engenharia Civil…" value="${formData.cursoNome||''}">
-      </div>
-      <div class="q-block"><label class="q-label">Áreas de interesse <span style="font-weight:400;color:var(--slate)">(marque quantas quiser)</span></label>
-        <div class="chips">${chips('areas',["Exatas","Biológicas/Saúde","Humanas","Linguagens","Tecnologia/TI","Engenharias","Negócios","Direito","Educação","Comunicação","Artes/Design","Esporte"],false)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Quando pretende fazer o vestibular/ENEM?</label>
-        <div class="chips">${chips('quando',["Este ano","Próximo ano","Em 2+ anos","Ainda não sei"],true)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Universidade desejada?</label>
-        <input type="text" id="f-univ" placeholder="Ex: USP, UNICAMP, UFMG…" value="${formData.univ||''}">
-      </div>`;
-    case 2:return`
-      <div class="q-block"><label class="q-label">Como avalia seu desempenho? <span style="font-weight:400;color:var(--slate)">(1=muito fraco · 5=ótimo)</span></label>
-        ${["Português/Redação","Matemática","Biologia","Física","Química","História/Geo","Inglês"].map(d=>`
-          <div class="rating-row">
-            <span class="rating-label">${d}</span>
-            <div class="rating-stars" id="stars-${d.replace('/','_')}">
-              ${[1,2,3,4,5].map(n=>`<button class="star-btn${((formData.notas||{})[d]||0)>=n?' active':''}" onclick="setRating('${d.replace('/','_')}','${d}',${n})">${n}</button>`).join('')}
-            </div>
-          </div>`).join('')}
-      </div>
-      <div class="two-col">
-        <div class="q-block"><label class="q-label">Disciplina que mais gosta?</label><input type="text" id="f-gosta" placeholder="…" value="${formData.gosta||''}"></div>
-        <div class="q-block"><label class="q-label">Maior dificuldade?</label><input type="text" id="f-dificil" placeholder="…" value="${formData.dificil||''}"></div>
-      </div>
-      <div class="q-block"><label class="q-label">Como prefere estudar? <span style="font-weight:400;color:var(--slate)">(até 2)</span></label>
-        <div class="chips">${chips('metodo',["Lendo textos","Videoaulas","Exercícios/questões","Resumos/mapas","Em grupo","Ouvindo explicações"],false,2)}</div>
-      </div>`;
-    case 3:return`
-      <div class="q-block"><label class="q-label">Marque seus horários disponíveis para estudar:</label>${renderScheduleGrid()}</div>
-      <div class="q-block" style="margin-top:18px"><label class="q-label">Atividades fora da escola:</label>
-        <div class="chips">${chips('ativ',["Trabalho/Estágio","Esporte/Academia","Curso de idiomas","Curso técnico","Teatro/Música/Arte","Cuidados familiares","Atividade religiosa","Outro"],false)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Descreva os horários dessas atividades:</label>
-        <textarea id="f-ativDesc" placeholder="Ex: Estágio seg–sex 13h–17h, academia ter/qui 19h–20h…">${formData.ativDesc||''}</textarea>
-      </div>
-      <div class="q-block"><label class="q-label">Acesso a internet para estudar:</label>
-        <div class="chips">${chips('acesso',["Acesso fácil e estável","Sinal instável","Só pelo celular","Acesso limitado"],true)}</div>
-      </div>`;
-    case 4:return`
-      <div class="q-block"><label class="q-label">Como se sente em relação ao vestibular e futuro?</label>
-        <div class="chips">${chips('sentimento',["Animado(a) e confiante","Ansioso(a) mas motivado(a)","Inseguro(a)","Pressionado(a)","Com medo de errar","Indiferente por ora"],true)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Como está sua motivação hoje?</label>
-        <div style="padding:8px 0">
-          <input type="range" min="1" max="5" value="${formData.motivacao||3}" id="slider-motivacao" oninput="updateSlider(this)">
-          <div class="slider-labels"><span>😔 Desmotivado</span><span>🔥 Muito motivado</span></div>
-          <div class="slider-val" id="slider-val">${formData.motivacao||3}/5</div>
-        </div>
-      </div>
-      <div class="q-block"><label class="q-label">Situações que dificultam seus estudos: <span style="font-weight:400;color:var(--slate)">(opcional)</span></label>
-        <div class="chips">${chips('dificSit',["Saúde física/mental","Dificuldades financeiras","Conflitos familiares","Falta de ambiente","Nenhuma"],false)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Possui laudo ou diagnóstico de dificuldade de aprendizagem?</label>
-        <div class="chips">${chips('laudo',["Sim (TDAH, dislexia, TEA, outro)","Suspeito, sem diagnóstico","Não"],true)}</div>
-      </div>`;
-    case 5:return`
-      <div class="q-block"><label class="q-label">O que espera da mentoria? <span style="font-weight:400;color:var(--slate)">(até 3)</span></label>
-        <div class="chips">${chips('espera',["Plano de estudos organizado","Indicação de materiais","Apoio vocacional","Técnicas de memorização","Simulados e revisão","Apoio emocional","Organização de rotina","Dicas de redação ENEM"],false,3)}</div>
-      </div>
-      <div class="q-block"><label class="q-label">Seus 3 maiores objetivos nos próximos 6 meses:</label>
-        <input type="text" id="f-obj1" placeholder="Objetivo 1" style="margin-bottom:9px" value="${formData.obj1||''}">
-        <input type="text" id="f-obj2" placeholder="Objetivo 2" style="margin-bottom:9px" value="${formData.obj2||''}">
-        <input type="text" id="f-obj3" placeholder="Objetivo 3" value="${formData.obj3||''}">
-      </div>
-      <div class="q-block"><label class="q-label">Algo mais para compartilhar com seu(sua) mentor(a)?</label>
-        <textarea id="f-obs" placeholder="Escreva à vontade…">${formData.obs||''}</textarea>
-      </div>`;
+document.addEventListener('keydown',e=>{
+  const formScreen=document.getElementById('s-form');
+  if(!formScreen||!formScreen.classList.contains('active'))return;
+  if(e.key==='Enter'&&!e.shiftKey){
+    const a=document.activeElement;
+    if(a&&a.tagName==='TEXTAREA')return;
+    e.preventDefault();nextQ();
   }
-}
-
-function saveStepData(s){
-  const g=id=>{const e=document.getElementById(id);return e?e.value:'';};
-  if(s===0)Object.assign(formData,{nome:g('f-nome'),nasc:g('f-nasc'),email:g('f-email'),tel:g('f-tel'),escola:g('f-escola')});
-  if(s===1)Object.assign(formData,{cursoNome:g('f-cursoNome'),univ:g('f-univ')});
-  if(s===2)Object.assign(formData,{gosta:g('f-gosta'),dificil:g('f-dificil')});
-  if(s===3)Object.assign(formData,{ativDesc:g('f-ativDesc')});
-  if(s===5)Object.assign(formData,{obj1:g('f-obj1'),obj2:g('f-obj2'),obj3:g('f-obj3'),obs:g('f-obs')});
-}
-function nextStep(){saveStepData(currentStep);currentStep++;renderStep();}
-function prevStep(){saveStepData(currentStep);currentStep--;renderStep();}
+});
 
 async function submitForm(){
-  saveStepData(currentStep);
-  if(!formData.nome){showToast('⚠️ Preencha ao menos seu nome','error');return;}
-  document.getElementById('progress-fill').style.width='100%';
-  showToast('⏳ Enviando anamnese…');
-  const ok = await saveToSheets(formData);
+  saveQ();if(!formData.nome){showToast('⚠️ Preencha ao menos seu nome','err');return}
+  document.getElementById('fpb').style.width='100%';showToast('⏳ Enviando…');
+
+  // ── Compute derived scores ──
+  // Procrastination score (0–10)
+  const procrastMap={'Raramente':1,'Às vezes':3,'Frequentemente':6,'Quase sempre':8,'Sempre':10};
+  formData.scoreProcrastinacao=procrastMap[formData.procrastFreq]||5;
+  // Sleep alert
+  const sonoH=parseInt(formData.horasSono)||7;
+  formData.alertaSono=sonoH<7;
+  formData.horasSonoNum=sonoH;
+  // Autonomy score
+  const autodMap={'Alta — estudo mesmo sem querer':5,'Boa — cumpro a maioria dos planos':4,'Média — depende muito do meu humor':3,'Baixa — preciso de alguém me cobrando':2,'Muito baixa — raramente estudo sozinho(a)':1};
+  formData.scoreAutodisciplina=autodMap[formData.autodisciplina]||3;
+  // Focus score
+  const focoMap={'Menos de 15 minutos':1,'Entre 15 e 30 minutos':2,'Entre 30 e 45 minutos':3,'Entre 45 min e 1 hora':4,'Mais de 1 hora':5};
+  formData.scoreFoco=focoMap[formData.tempoFoco]||3;
+  // Anxiety flag
+  const ansMap={'Raramente me sinto ansioso(a)':1,'Às vezes, mas controlo bem':2,'Frequentemente, afeta meu dia a dia':3,'Muito frequentemente, é difícil lidar':4,'Sinto ansiedade intensa quase sempre':5};
+  formData.scoreAnsiedade=ansMap[formData.ansiedadeGeral]||2;
+  // Available study hours (estimated)
+  const horasMap={'Menos de 5 horas':3,'Entre 5 e 10 horas':7,'Entre 10 e 15 horas':12,'Mais de 15 horas':18};
+  formData.horasEstimadas=horasMap[formData.horasLivres]||7;
+
+  const ok=await sendToSheets(formData);
   const nome=formData.nome||'Aluno';
-  const initials=nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  const initials=nome.trim().split(' ').filter(Boolean).map(n=>n[0]).slice(0,2).join('').toUpperCase();
   const notas=formData.notas||{};
-  const motiv=parseInt(formData.motivacao)||3;
+
+  // Build auto-insights based on scores
+  const autoInsights=[];
+  const vals=Object.values(notas).filter(v=>v>0);
+  const media=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+  const melhor=Object.entries(notas).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])[0];
+  const pior=Object.entries(notas).filter(([,v])=>v>0).sort((a,b)=>a[1]-b[1])[0];
+  if(melhor&&melhor[1]>=4)autoInsights.push({type:'good',icon:'✅',text:`Destaque em ${melhor[0]} (${melhor[1]}/5) — ponto forte a explorar.`});
+  if(pior&&pior[1]<=2)autoInsights.push({type:'warn',icon:'⚠️',text:`${pior[0]} precisa de atenção (${pior[1]}/5) — prioridade no plano.`});
+  if(formData.scoreProcrastinacao>=6)autoInsights.push({type:'warn',icon:'⚠️',text:`Nível de procrastinação elevado (${formData.scoreProcrastinacao}/10) — estratégias de foco são essenciais.`});
+  if(formData.alertaSono)autoInsights.push({type:'warn',icon:'😴',text:`Dorme apenas ${sonoH}h por noite — abaixo do recomendado. Pode afetar memória e concentração.`});
+  if(formData.scoreAnsiedade>=4)autoInsights.push({type:'warn',icon:'💬',text:'Ansiedade elevada detectada — apoio emocional deve ser parte do plano.'});
+  if(formData.scoreAutodisciplina>=4)autoInsights.push({type:'good',icon:'✅',text:'Boa autodisciplina — capaz de seguir cronograma com autonomia.'});
+  if(autoInsights.length===0)autoInsights.push({type:'info',icon:'📋',text:`Anamnese de ${nome} recebida. Plano em elaboração pelo mentor.`});
+
   students.unshift({
-    id:'new'+Date.now(), name:nome, initials, serie:formData.serie||'—', escola:formData.escola||'—',
-    curso:formData.cursoNome||'Indefinido', area:(formData.areas||['—'])[0],
-    email:formData.email||'—', tel:formData.tel||'—',
-    disciplinas:{"Português":notas["Português/Redação"]||0,"Matemática":notas["Matemática"]||0,
-      "Biologia":notas["Biologia"]||0,"Física":notas["Física"]||0,"Química":notas["Química"]||0,
-      "História/Geo":notas["História/Geo"]||0,"Inglês":notas["Inglês"]||0},
-    motivacao:motiv, vocacional:formData.areas||[],
-    schedule:formData.schedule||{"Manhã":[0,0,0,0,0,0,0],"Tarde":[0,0,0,0,0,0,0],"Noite":[0,0,0,0,0,0,0]},
-    atividades:(formData.ativ||[]).map(a=>({name:a,icon:"📌",color:"#F0F4FA",iconColor:"#1A56DB",horario:formData.ativDesc||'',tipo:a,tipoColor:"#1A56DB",tipoBg:"#EFF6FF"})),
-    alert:null,
-    insights:[
-      {type:"info",icon:"📋",text:`Anamnese de ${nome} recebida. Plano em elaboração pelo mentor.`},
-      {type:ok?'good':'warn',icon:ok?'✅':'⚠️',text:ok?'Dados salvos no Google Sheets com sucesso!':'Sheets não configurado — dados disponíveis nesta sessão.'},
-    ],
-    plano:[{cor:"#1A56DB",bold:"Análise em andamento:",texto:" O(a) mentor(a) irá personalizar o plano em breve."}]
+    id:'new'+Date.now(),name:nome,initials,
+    serie:formData.serie||'—',escola:formData.escola||'—',
+    curso:formData.cursoNome||'A definir',area:(formData.areas||['—'])[0]||'—',
+    email:formData.email||'—',tel:formData.tel||'—',nasc:formData.nasc||'—',
+    cursoStatus:formData.cursoStatus||'—',univ:formData.univ||'—',
+    quando:formData.quando||'—',modeloUniv:formData.modeloUniv||'—',
+    disciplinas:{Português:notas['Português/Redação']||0,Matemática:notas['Matemática']||0,Biologia:notas['Biologia']||0,Física:notas['Física']||0,Química:notas['Química']||0,'História/Geo':notas['História/Geo']||0,Inglês:notas['Inglês']||0},
+    gosta:formData.gosta||'—',dificil:formData.dificil||'—',
+    motivacao:parseInt(formData.motivacao)||3,
+    sentimento:formData.sentimento||'—',
+    vocacional:formData.areas||[],
+    schedule:formData.schedule||{'Manhã':[0,0,0,0,0,0,0],'Tarde':[0,0,0,0,0,0,0],'Noite':[0,0,0,0,0,0,0]},
+    atividades:(formData.ativ||[]).filter(a=>a!=='Nenhuma').map(a=>({name:a,icon:'📌',color:'#F0F4FA',iconColor:'#1A56DB',horario:formData.ativDesc||'',tipo:a,tipoColor:'#1A56DB',tipoBg:'#EFF6FF'})),
+    ativ:formData.ativ||[],ativDesc:formData.ativDesc||'',esporteDias:formData.esporteDias||[],
+    metodo:formData.metodo||[],estiloLeitura:formData.estiloLeitura||'—',
+    simulados:formData.simulados||'—',revisao:formData.revisao||'—',
+    acesso:formData.acesso||'—',dispositivoEstudo:formData.dispositivoEstudo||[],
+    horaDorme:formData.horaDorme||'—',horaAcorda:formData.horaAcorda||'—',
+    horasSono:formData.horasSono||'—',horasSonoNum:formData.horasSonoNum||7,
+    qualidadeSono:formData.qualidadeSono||'—',alertaSono:formData.alertaSono||false,
+    ambiente:formData.ambiente||'—',fimDeSemana:formData.fimDeSemana||'—',
+    horasLivres:formData.horasLivres||'—',horasEstimadas:formData.horasEstimadas||7,
+    tempoFoco:formData.tempoFoco||'—',celularEstudo:formData.celularEstudo||'—',
+    procrastinacao:formData.procrastinacao||[],procrastFreq:formData.procrastFreq||'—',
+    scoreProcrastinacao:formData.scoreProcrastinacao||5,
+    planejamento:formData.planejamento||'—',errosProva:formData.errosProva||'—',
+    ansiedadeProva:formData.ansiedadeProva||'—',relacaoErro:formData.relacaoErro||'—',
+    memorizacao:formData.memorizacao||'—',autodisciplina:formData.autodisciplina||'—',
+    scoreAutodisciplina:formData.scoreAutodisciplina||3,
+    scoreFoco:formData.scoreFoco||3,scoreAnsiedade:formData.scoreAnsiedade||2,
+    redeApoio:formData.redeApoio||'—',materialEstudo:formData.materialEstudo||[],
+    ansiedadeGeral:formData.ansiedadeGeral||'—',pressaoExt:formData.pressaoExt||'—',
+    autoconfianca:formData.autoconfianca||'—',
+    espera:formData.espera||[],obj1:formData.obj1||'',obj2:formData.obj2||'',obj3:formData.obj3||'',
+    disponMentoria:formData.disponMentoria||'—',formatoMentoria:formData.formatoMentoria||'—',
+    obs:formData.obs||'',laudo:formData.laudo||'Não',dificSit:formData.dificSit||[],
+    alert:formData.alertaSono?`${nome} dorme apenas ${sonoH}h/noite — sono insuficiente. Ansiedade: ${formData.ansiedadeGeral||'—'}.`:null,
+    insights:autoInsights,
+    plano:[{cor:'#1A56DB',bold:'Análise em andamento:',texto:' O(a) mentor(a) irá personalizar o plano em breve com base nos dados coletados.'}]
   });
-  showDashboard();
-  showToast(ok?'✅ Anamnese enviada e salva no Sheets!':'✅ Anamnese enviada!',ok?'success':'');
+  document.getElementById('form-nav').style.display='none';
+  document.getElementById('form-stage').innerHTML=`<div class="success-wrap"><div class="success-icon">✅</div><h1 class="success-title">Anamnese enviada!</h1><p class="success-sub">Obrigado, ${nome.split(' ')[0]}! Seu mentor(a) vai analisar suas respostas e entrar em contato em breve.</p><div class="success-meta">📚 Série: <strong>${formData.serie||'—'}</strong><br>🎯 Curso: <strong>${formData.cursoNome||'A definir'}</strong><br>😴 Sono: <strong>${sonoH}h${formData.alertaSono?' ⚠️':''}</strong><br>💾 ${ok?'Dados salvos no Google Sheets ✅':'Dados registrados nesta sessão'}</div><button onclick="goHome()" style="background:var(--ink);color:white;border:none;padding:14px 32px;border-radius:40px;font-size:1rem;cursor:pointer;font-family:var(--fb);font-weight:600">← Voltar ao início</button></div>`;
 }
 
-// ══════════ DASHBOARD ══════════
-function renderDashboard(s){
-  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],ps=['Manhã','Tarde','Noite'];
-  const total=Object.values(s.schedule).flat().reduce((a,b)=>a+b,0);
-  const mc=s.motivacao>=4?'#10B981':s.motivacao>=3?'#F59E0B':'#F43F5E';
-  const ml=s.motivacao>=4?'🔥 Alta':s.motivacao>=3?'⚡ Moderada':'😔 Baixa — atenção!';
-  const hm=`<div class="heatmap"><div class="hm-head"></div>${days.map(d=>`<div class="hm-head">${d}</div>`).join('')}
-    ${ps.map(p=>`<div class="hm-label">${p}</div>${(s.schedule[p]||[0,0,0,0,0,0,0]).map(v=>`<div class="hm-cell ${v?'h2':'h0'}">${v?'✓':''}</div>`).join('')}`).join('')}</div>`;
+// ══════ DASHBOARD ══════
+function buildSelect(){document.getElementById('sel-stu').innerHTML=students.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('')}
+function loadStu(idx){curStu=parseInt(idx);renderDash(students[curStu])}
 
-  document.getElementById('dash-container').innerHTML=`
-    ${s.alert?`<div class="alert-banner">⚠️ <strong>Atenção:</strong> ${s.alert}</div>`:''}
-    <div class="student-hero">
+function renderDash(s){
+  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],ps=['Manhã','Tarde','Noite'];
+  const tot=Object.values(s.schedule).flat().filter(x=>x).length;
+  const mc=s.motivacao>=4?'#10B981':s.motivacao>=3?'#F59E0B':'#F43F5E';
+  const ml=s.motivacao>=4?'🔥 Alta':s.motivacao>=3?'⚡ Moderada':'😔 Baixa — atenção';
+
+  // Scores
+  const scoreProc=s.scoreProcrastinacao||5;
+  const scoreFoco=s.scoreFoco||3;
+  const scoreAuto=s.scoreAutodisciplina||3;
+  const scoreAnx=s.scoreAnsiedade||2;
+  const procColor=scoreProc<=3?'#10B981':scoreProc<=6?'#F59E0B':'#F43F5E';
+  const focoColor=scoreFoco>=4?'#10B981':scoreFoco>=3?'#F59E0B':'#F43F5E';
+  const autoColor=scoreAuto>=4?'#10B981':scoreAuto>=3?'#F59E0B':'#F43F5E';
+  const anxColor=scoreAnx<=2?'#10B981':scoreAnx<=3?'#F59E0B':'#F43F5E';
+
+  // Rich rotina grid — 24 slots per day (hours 5h–24h+), showing blocks
+  function rotinaGrid(){
+    const HOURS=['5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','0h','1h','2h'];
+    const DAYS_SHORT=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+    // Build cell states: 'escola'|'livre'|'ativ'|'sono'|'neutro'
+    const dormMap={'Antes das 20h':15,'Entre 20h e 21h':15,'Entre 21h e 22h':16,'Entre 22h e 23h':17,'Entre 23h e meia-noite':18,'Entre 0h e 1h':19,'Entre 1h e 2h':20,'Entre 2h e 3h':21,'Entre 3h e 4h':22,'Depois das 4h (virada)':23};
+    const acorMap={'Antes das 5h':0,'Entre 5h e 5h30':0,'Entre 5h30 e 6h':1,'Entre 6h e 6h30':1,'Entre 6h30 e 7h':2,'Depois das 7h':2};
+    const dormH=dormMap[s.horaDorme]||17; // hour index in HOURS arr (17=22h)
+    const acorH=acorMap[s.horaAcorda]||1; // 0=5h, 1=6h, 2=7h
+
+    // grid: days × hours
+    const grid=Array(7).fill(null).map(()=>Array(HOURS.length).fill('neutro'));
+    for(let d=0;d<7;d++){
+      for(let h=0;h<HOURS.length;h++){
+        // Escola manhã seg-sex: 7h–12h = indices 2..6
+        if(d<5&&h>=2&&h<=6){grid[d][h]='escola';continue;}
+        // Sono: de dormH até acorH (crossing midnight handled)
+        let isSono=false;
+        if(dormH>acorH){isSono=h>=dormH||h<=acorH;}
+        else{isSono=h>=dormH&&h<=acorH;}
+        if(isSono){grid[d][h]='sono';continue;}
+        // Atividades (tarde = 12..17, noite = 17..22)
+        const hasTarde=(s.schedule&&(s.schedule['Tarde']||[])[d]);
+        const hasNoite=(s.schedule&&(s.schedule['Noite']||[])[d]);
+        if(hasTarde&&h>=6&&h<=10){grid[d][h]='livre';continue;}
+        if(hasNoite&&h>=13&&h<=17){grid[d][h]='livre';continue;}
+        // sport days
+        const dayNames=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+        if((s.esporteDias||[]).includes(dayNames[d])&&h>=13&&h<=15){grid[d][h]='ativ';continue;}
+        // weekend
+        if(d>=5&&h>=4&&h<=12){grid[d][h]='livre';}
+      }
+    }
+    const LEGENDS=[{c:'#0EA5A0',l:'Livre p/ estudo'},{c:'#0F1B2D',l:'Escola'},{c:'#7C3AED',l:'Sono'},{c:'#F59E0B',l:'Atividade'},{c:'#E2E8F0',l:'Sem info'}];
+    const COLORS={escola:'#0F1B2D',sono:'#7C3AED',ativ:'#F59E0B',livre:'#0EA5A0',neutro:'#F1F5F9'};
+    const TCOLORS={escola:'#fff',sono:'#fff',ativ:'#fff',livre:'#fff',neutro:'#CBD5E1'};
+    let html=`<div style="overflow-x:auto;margin-bottom:8px"><table style="border-collapse:collapse;font-size:.68rem;min-width:500px;width:100%">`;
+    html+=`<tr><th style="padding:3px 5px;color:var(--ink3);font-weight:600;text-align:left;min-width:32px"></th>`;
+    HOURS.forEach(h=>html+=`<th style="padding:2px 1px;color:var(--ink3);font-weight:600;text-align:center;font-size:.6rem">${h}</th>`);
+    html+=`</tr>`;
+    DAYS_SHORT.forEach((day,d)=>{
+      html+=`<tr><td style="padding:3px 6px 3px 0;font-weight:600;color:var(--ink2);white-space:nowrap">${day}</td>`;
+      grid[d].forEach((state,h)=>{
+        const bg=COLORS[state];const tc=TCOLORS[state];
+        html+=`<td style="width:${100/HOURS.length}%;height:20px;background:${bg};border-radius:3px;margin:1px;padding:0" title="${HOURS[h]} ${day}: ${state}"></td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`</table></div>`;
+    html+=`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">`;
+    LEGENDS.forEach(l=>html+=`<div style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--ink3)"><div style="width:10px;height:10px;border-radius:2px;background:${l.c}"></div>${l.l}</div>`);
+    html+=`</div>`;
+    return html;
+  }
+
+  // Scores mini-widget
+  function scoreMini(label,val,max,color,desc){
+    const pct=Math.round((val/max)*100);
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-size:.82rem;font-weight:600;color:var(--ink2)">${label}</span>
+        <span style="font-size:.82rem;font-weight:700;color:${color}">${val}/${max}</span>
+      </div>
+      <div style="height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width .5s"></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--ink3);margin-top:2px">${desc}</div>
+    </div>`;
+  }
+
+  const hm='<div class="hm"><div class="hm-h"></div>'+days.map(d=>`<div class="hm-h">${d}</div>`).join('')+ps.map(p=>`<div class="hm-lb">${p}</div>`+(s.schedule[p]||[0,0,0,0,0,0,0]).map(v=>`<div class="hm-cell ${v?'on':'off'}">${v?'✓':''}</div>`).join('')).join('')+'</div>';
+
+  const sonoAlertHtml=s.alertaSono?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:8px 12px;font-size:.82rem;color:#92400E;margin-bottom:12px">😴 <strong>Sono insuficiente:</strong> ${s.horasSonoNum||'?'}h/noite — mínimo recomendado: 7h</div>`:'';
+
+  document.getElementById('dash-body').innerHTML=
+    (s.alert?`<div class="alert-bar">⚠️ <strong>Atenção:</strong> ${s.alert}</div>`:'')+
+    `<div class="student-hero">
       <div class="avatar">${s.initials}</div>
       <div class="student-info">
         <h2>${s.name}</h2><p>${s.serie} · ${s.escola}</p>
-        <div class="student-tags">
-          <span class="stag teal">🎯 ${s.curso}</span>
-          <span class="stag amber">📚 ${s.area}</span>
-          <span class="stag">${total} turnos livres/sem.</span>
+        <div class="hero-tags">
+          <span class="htag t">🎯 ${s.curso}</span>
+          <span class="htag a">📚 ${s.area}</span>
+          <span class="htag">${tot} turnos livres/sem.</span>
+          ${s.horasSonoNum?`<span class="htag" style="${s.alertaSono?'background:rgba(244,63,94,.2);color:#FDA4AF;border-color:rgba(244,63,94,.3)':''}">😴 ${s.horasSonoNum}h sono</span>`:''}
         </div>
       </div>
     </div>
-    <div class="dash-grid">
-      <div class="card col-6">
-        <div class="card-title">📊 Desempenho por Disciplina</div><div class="card-sub">Autoavaliação (1–5)</div>
-        <div style="height:255px"><canvas id="radarChart"></canvas></div>
+    <div class="dgrid">
+      <div class="card c6">
+        <div class="card-h">📊 Desempenho por Disciplina</div><div class="card-s">Autoavaliação (1–5)</div>
+        <div style="height:280px"><canvas id="rC"></canvas></div>
       </div>
-      <div class="card col-6">
-        <div class="card-title">💬 Motivação & Score Emocional</div><div class="card-sub">Como o aluno se sente</div>
-        <div class="score-circle"><canvas id="scoreChart"></canvas>
-          <div class="score-value"><span class="num" style="color:${mc}">${s.motivacao}</span><span class="lbl">de 5</span></div>
+      <div class="card c6">
+        <div class="card-h">💬 Motivação & Estado Emocional</div><div class="card-s">${ml}</div>
+        <div class="score-ring"><canvas id="sC"></canvas><div class="score-center"><span class="score-num" style="color:${mc}">${s.motivacao}</span><span class="score-lbl">de 5</span></div></div>
+        <div style="text-align:center;font-size:.82rem;color:var(--ink3);margin-bottom:14px">${ml}</div>
+        <div class="ins-list">${s.insights.map(i=>`<div class="ins ${i.type}"><span class="ins-ic">${i.icon}</span><span>${i.text}</span></div>`).join('')}</div>
+      </div>
+      <div class="card c12">
+        <div class="card-h">🕐 Grade de Rotina Semanal</div>
+        <div class="card-s">Visualização completa do dia — escola, sono, atividades e janelas livres para estudar</div>
+        ${sonoAlertHtml}
+        ${rotinaGrid()}
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+          <div style="background:#F0FDF4;border-radius:8px;padding:10px 14px;font-size:.82rem">
+            <strong style="color:#065F46">Dorme:</strong> <span style="color:#065F46">${s.horaDorme||'—'}</span>
+          </div>
+          <div style="background:#F0FDF4;border-radius:8px;padding:10px 14px;font-size:.82rem">
+            <strong style="color:#065F46">Acorda:</strong> <span style="color:#065F46">${s.horaAcorda||'—'}</span>
+          </div>
+          <div style="background:${s.alertaSono?'#FEF2F2':'#F0FDF4'};border-radius:8px;padding:10px 14px;font-size:.82rem">
+            <strong style="color:${s.alertaSono?'#991B1B':'#065F46'}">Sono médio:</strong> <span style="color:${s.alertaSono?'#991B1B':'#065F46'}">${s.horasSonoNum||'?'}h ${s.alertaSono?'⚠️':''}</span>
+          </div>
+          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem">
+            <strong style="color:var(--ink2)">Horas livres/sem:</strong> <span style="color:var(--teal)">${s.horasLivres||'—'}</span>
+          </div>
+          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem">
+            <strong style="color:var(--ink2)">Fim de semana:</strong> <span style="color:var(--ink3)">${s.fimDeSemana||'—'}</span>
+          </div>
+          <div style="background:#F8FAFF;border-radius:8px;padding:10px 14px;font-size:.82rem">
+            <strong style="color:var(--ink2)">Ambiente:</strong> <span style="color:var(--ink3)">${s.ambiente||'—'}</span>
+          </div>
         </div>
-        <div style="text-align:center;font-size:.83rem;color:var(--slate);margin-bottom:14px">${ml}</div>
-        <div class="insight-list">${s.insights.map(i=>`<div class="insight-item ${i.type}"><span class="insight-icon">${i.icon}</span><span>${i.text}</span></div>`).join('')}</div>
       </div>
-      <div class="card col-8">
-        <div class="card-title">🗓️ Disponibilidade Semanal</div><div class="card-sub">Turnos disponíveis marcados pelo aluno</div>
-        ${hm}
-        <div style="margin-top:10px;font-size:.80rem;color:var(--slate)">Total: <strong style="color:var(--teal)">${total} turnos livres</strong>/semana</div>
+      <div class="card c4">
+        <div class="card-h">🧠 Perfil de Estudo</div><div class="card-s">Scores comportamentais calculados</div>
+        ${scoreMini('Procrastinação',scoreProc,10,procColor,scoreProc<=3?'Baixa — ótimo!':scoreProc<=6?'Moderada — atenção':'Alta — prioridade no plano')}
+        ${scoreMini('Foco (tempo contínuo)',scoreFoco,5,focoColor,s.tempoFoco||'—')}
+        ${scoreMini('Autodisciplina',scoreAuto,5,autoColor,s.autodisciplina||'—')}
+        ${scoreMini('Nível de ansiedade',scoreAnx,5,anxColor,s.ansiedadeGeral||'—')}
+        <div style="margin-top:10px;padding:10px;background:#F8FAFF;border-radius:8px;font-size:.82rem;color:var(--ink3)">
+          <strong style="color:var(--ink2)">Celular nos estudos:</strong> ${s.celularEstudo||'—'}<br>
+          <strong style="color:var(--ink2)">Planejamento:</strong> ${s.planejamento||'—'}
+        </div>
       </div>
-      <div class="card col-4">
-        <div class="card-title">🎯 Mapa Vocacional</div><div class="card-sub">Áreas de interesse</div>
-        <div style="height:195px"><canvas id="donutChart"></canvas></div>
+      <div class="card c4">
+        <div class="card-h">🎯 Perfil Vocacional</div><div class="card-s">Áreas de interesse</div>
+        <div style="height:160px"><canvas id="dC"></canvas></div>
+        <div style="font-size:.78rem;color:var(--ink3);margin-top:8px">
+          <strong style="color:var(--ink2)">Modelo universidade:</strong> ${s.modeloUniv||'—'}<br>
+          <strong style="color:var(--ink2)">Quando vestibular:</strong> ${s.quando||'—'}
+        </div>
       </div>
-      <div class="card col-4">
-        <div class="card-title">⚡ Atividades Extracurriculares</div><div class="card-sub">O que ocupa o tempo do aluno</div>
-        ${s.atividades.length?s.atividades.map(a=>`<div class="activity-item">
-          <div class="act-icon" style="background:${a.color}">${a.icon}</div>
-          <div class="act-info"><div class="act-name">${a.name}</div><div class="act-time">🕐 ${a.horario}</div></div>
-          <span class="act-badge" style="color:${a.tipoColor};background:${a.tipoBg}">${a.tipo}</span>
-        </div>`).join(''):'<p style="color:var(--slate);font-size:.88rem">Nenhuma atividade registrada.</p>'}
+      <div class="card c4">
+        <div class="card-h">⚡ Atividades & Rotina</div><div class="card-s">Fora da escola</div>
+        ${s.atividades.length?s.atividades.map(a=>`<div class="act-row"><div class="act-ico" style="background:${a.color}">${a.icon}</div><div style="flex:1"><div class="act-nm">${a.name}</div><div class="act-tm">🕐 ${a.horario}</div></div><span class="act-tag" style="color:${a.tipoColor};background:${a.tipoBg}">${a.tipo}</span></div>`).join(''):'<p style="color:var(--ink3);font-size:.87rem;margin-bottom:8px">Nenhuma registrada.</p>'}
+        <div style="margin-top:10px;font-size:.78rem;color:var(--ink3)">
+          <strong style="color:var(--ink2)">Esporte:</strong> ${(s.esporteDias||[]).join(', ')||'—'}<br>
+          <strong style="color:var(--ink2)">Internet:</strong> ${s.acesso||'—'}
+        </div>
       </div>
-      <div class="col-8">
+      <div class="c8">
         <div class="plan-box">
-          <h3>📋 Plano de Estudos Sugerido — ${s.name.split(' ')[0]}</h3>
-          ${s.plano.map(p=>`<div class="plan-row"><div class="plan-dot" style="background:${p.cor}"></div><span class="plan-text"><span class="plan-bold">${p.bold}</span>${p.texto}</span></div>`).join('')}
+          <h3>📋 Plano de Estudos — ${s.name.split(' ')[0]}</h3>
+          ${s.plano.map(p=>`<div class="plan-row2"><div class="plan-dot" style="background:${p.cor}"></div><span class="plan-txt"><span class="plan-bold">${p.bold}</span>${p.texto}</span></div>`).join('')}
         </div>
       </div>
     </div>`;
 
-  [radarChart,donutChart,scoreChart].forEach(c=>{if(c)c.destroy();});
-  radarChart=new Chart(document.getElementById('radarChart'),{
-    type:'radar',
-    data:{labels:Object.keys(s.disciplinas),datasets:[{label:s.name,data:Object.values(s.disciplinas),
-      backgroundColor:'rgba(14,165,160,.13)',borderColor:'#0EA5A0',pointBackgroundColor:'#0EA5A0',pointRadius:5,borderWidth:2.5}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:9.5},color:'#94A3B8'},grid:{color:'#E2E8F0'},
-        pointLabels:{font:{size:10.5,family:"'DM Sans'"},color:'#334155'}}},plugins:{legend:{display:false}}}
+  Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});charts={};
+  charts.r=new Chart(document.getElementById('rC'),{type:'radar',data:{labels:Object.keys(s.disciplinas),datasets:[{label:s.name,data:Object.values(s.disciplinas),backgroundColor:'rgba(14,165,160,.13)',borderColor:'#0EA5A0',pointBackgroundColor:'#0EA5A0',pointRadius:5,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:9},color:'#94A3B8'},grid:{color:'#E2E8F0'},pointLabels:{font:{size:9.5},color:'#334155'}}},plugins:{legend:{display:false}}}});
+  charts.s=new Chart(document.getElementById('sC'),{type:'doughnut',data:{datasets:[{data:[s.motivacao,5-s.motivacao],backgroundColor:[s.motivacao>=4?'#10B981':s.motivacao>=3?'#F59E0B':'#F43F5E','#F1F5F9'],borderWidth:0,cutout:'78%'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  const vc=['#0EA5A0','#1A56DB','#7C3AED','#F59E0B','#F43F5E','#10B981'];
+  charts.d=new Chart(document.getElementById('dC'),{type:'doughnut',data:{labels:s.vocacional.length?s.vocacional:['Não definido'],datasets:[{data:s.vocacional.length?s.vocacional.map((_,i,a)=>Math.round(100/a.length)):[100],backgroundColor:vc.slice(0,Math.max(s.vocacional.length,1)),borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:7}}}}});
+}
+
+// ══════ PDF — FICHA COMPLETA COM TODAS AS RESPOSTAS ══════
+async function exportPDF(){
+  const s=students[curStu];
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const W=210,H=297,M=14,CW=W-M*2;
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  const hx=h=>{h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]};
+  const sf=(r,g,b)=>doc.setFillColor(r,g,b);
+  const st=(r,g,b)=>doc.setTextColor(r,g,b);
+  const fn=(sz,w='normal')=>{doc.setFontSize(sz);doc.setFont('helvetica',w)};
+  let y=[52];
+  const chk=n=>{if(y[0]+n>H-16){doc.addPage();hdr();y[0]=28}};
+
+  function hdr(){
+    sf(12,18,32);doc.rect(0,0,W,11,'F');sf(14,165,160);doc.rect(0,10.2,W,1,'F');
+    fn(6.5);st(120,160,200);doc.text('Mentoria CEPRA  ·  '+s.name,M,7);doc.text('Emitido: '+hoje,W-M,7,{align:'right'});
+  }
+  function sec(label,letter){chk(16);y[0]+=4;sf(239,246,255);doc.roundedRect(M,y[0],CW,9,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,9,'F');fn(9,'bold');st(15,27,45);doc.text(letter+'.  '+label,M+7,y[0]+6.2);y[0]+=13}
+  function pair(l1,v1,l2,v2){
+    chk(10);const hw=(CW-4)/2;
+    [[M,l1,v1],[M+hw+4,l2,v2]].forEach(([x,l,v])=>{sf(248,250,255);doc.roundedRect(x,y[0],hw,8,1.5,1.5,'F');fn(6,'bold');st(100,116,139);doc.text((l||'').toUpperCase(),x+3,y[0]+3.2);fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(String(v||'—'),hw-7)[0],x+3,y[0]+7)});y[0]+=10
+  }
+  function full(label,value){chk(10);sf(248,250,255);doc.roundedRect(M,y[0],CW,8,1.5,1.5,'F');fn(6,'bold');st(100,116,139);doc.text((label||'').toUpperCase(),M+3,y[0]+3.2);fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(String(value||'—'),CW-8)[0],M+3,y[0]+7);y[0]+=10}
+  function tags(label,arr){
+    if(!arr||!arr.length)return;
+    const str=(arr||[]).join('  ·  ');
+    chk(12);sf(240,247,255);doc.roundedRect(M,y[0],CW,10,2,2,'F');fn(6,'bold');st(100,116,139);doc.text((label||'').toUpperCase(),M+3,y[0]+4.2);fn(8,'normal');st(26,86,219);doc.text(doc.splitTextToSize(str,CW-8)[0],M+3,y[0]+8.5);y[0]+=13
+  }
+  function nota2c(v){return v>=4?[[209,250,229],[6,95,70],[16,185,129]]:v>=3?[[254,243,199],[146,64,14],[245,158,11]]:[[255,228,230],[159,18,57],[244,63,94]]}
+
+  // ── CAPA ──
+  sf(12,18,32);doc.rect(0,0,W,44,'F');sf(14,165,160);doc.rect(0,43,W,2,'F');sf(26,86,219);doc.rect(0,0,5,46,'F');
+  sf(14,165,160);doc.circle(M+14,22,12,'F');fn(11,'bold');st(255,255,255);doc.text(s.initials,M+14,22,{align:'center',baseline:'middle'});
+  fn(15,'bold');st(255,255,255);doc.text(s.name,M+32,14);
+  fn(8,'normal');st(150,200,240);doc.text(s.serie+' · '+s.escola,M+32,20.5);
+  fn(7.5,'normal');st(120,170,220);doc.text('Curso almejado: '+s.curso+'  ·  Área: '+s.area,M+32,26.5);
+  fn(7,'normal');st(100,150,200);doc.text('E-mail: '+(s.email||'—')+'  ·  WhatsApp: '+(s.tel||'—'),M+32,32);
+  fn(7,'bold');st(14,165,160);doc.text('FICHA INDIVIDUAL COMPLETA DO ALUNO',M+32,38.5);
+  hdr();
+
+  // ── A: IDENTIFICAÇÃO ──
+  sec('Identificação e Contato','A');
+  pair('Nome completo',s.name,'Data de nascimento',s.nasc||'—');
+  pair('E-mail',s.email||'—','WhatsApp',s.tel||'—');
+  pair('Escola',s.escola||'—','Série/Ano escolar',s.serie||'—');
+
+  // ── B: VOCAÇÃO ──
+  sec('Vocação e Objetivos Acadêmicos','B');
+  pair('Status do curso','Tem curso em mente? '+s.cursoStatus||'—','Curso ou profissão almejada',s.curso||'—');
+  pair('Universidade desejada',s.univ||'—','Quando pretende fazer vestibular',s.quando||'—');
+  tags('Áreas de interesse',s.vocacional);
+  // Objetivos
+  chk(38);sf(237,246,255);doc.roundedRect(M,y[0],CW,34,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,34,'F');
+  fn(8,'bold');st(26,86,219);doc.text('Objetivos para os próximos 6 meses',M+6,y[0]+6);
+  [[s.obj1,'1'],[s.obj2,'2'],[s.obj3,'3']].filter(([v])=>v).forEach(([obj,n],i)=>{
+    sf(26,86,219);doc.circle(M+10,y[0]+13.5+i*7.5,3,'F');fn(7,'bold');st(255,255,255);doc.text(n,M+10,y[0]+13.5+i*7.5,{align:'center',baseline:'middle'});
+    fn(8,'normal');st(15,27,45);doc.text(doc.splitTextToSize(obj||'—',CW-20)[0],M+17,y[0]+13.5+i*7.5+1.5);
+  });y[0]+=37;
+
+  // ── C: DESEMPENHO ──
+  sec('Desempenho Acadêmico','C');
+  const discs=Object.entries(s.disciplinas);const hw2=(CW-4)/2;
+  discs.forEach(([d,v],i)=>{
+    const col=i%2,row=Math.floor(i/2);const cx=M+col*(hw2+4),cy=y[0]+row*9.5;
+    if(i===0)chk(discs.length/2*9.5+10);
+    const[bg,tx,bar]=nota2c(v);sf(...bg);doc.roundedRect(cx,cy,hw2,8,2,2,'F');fn(7.5,'bold');st(...tx);doc.text(d,cx+3,cy+5.2);
+    const bw=hw2-38;sf(220,228,240);doc.roundedRect(cx+hw2-bw-5,cy+2.5,bw,3,1,1,'F');sf(...bar);doc.roundedRect(cx+hw2-bw-5,cy+2.5,bw*v/5,3,1,1,'F');fn(7.5,'bold');st(...tx);doc.text(v+'/5',cx+hw2-3,cy+5.2,{align:'right'});
+  });y[0]+=Math.ceil(discs.length/2)*9.5+3;
+  // Média
+  const vals=Object.values(s.disciplinas).filter(v=>v>0);const media=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+  const[mbg,mtx,mbar]=nota2c(media);chk(10);sf(245,248,255);doc.roundedRect(M,y[0],CW,8,2,2,'F');fn(8,'bold');st(15,27,45);doc.text('Média geral:',M+4,y[0]+5.2);const mbw=CW-44;sf(220,228,240);doc.roundedRect(M+32,y[0]+2,mbw,4,1,1,'F');sf(...mbar);doc.roundedRect(M+32,y[0]+2,mbw*media/5,4,1,1,'F');fn(8,'bold');st(...mtx);doc.text(media.toFixed(1)+'/5',M+CW-2,y[0]+5.2,{align:'right'});y[0]+=11;
+  pair('Disciplina favorita',s.gosta||'—','Maior dificuldade',s.dificil||'—');
+  tags('Método de estudo preferido',s.metodo);
+
+  // ── D: ROTINA ──
+  sec('Rotina e Disponibilidade','D');
+  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],periods=['Manhã','Tarde','Noite'];
+  const pc=[[[207,250,244],[14,116,144]],[[219,234,254],[30,64,175]],[[237,233,254],[91,33,182]]];
+  const lw=22,cw3=(CW-lw)/7,ch=7;
+  chk(ch*4+14);
+  days.forEach((d,i)=>{sf(240,244,255);doc.rect(M+lw+i*cw3,y[0],cw3-.5,5.5,'F');fn(6.5,'bold');st(70,90,140);doc.text(d,M+lw+i*cw3+cw3/2,y[0]+3.8,{align:'center'})});y[0]+=6;
+  periods.forEach((p,pi)=>{
+    const[onBg,onTx]=pc[pi];sf(pi%2===0?248:244,pi%2===0?250:246,255);doc.rect(M,y[0],lw-1,ch,'F');fn(6.5,'bold');st(40,60,100);doc.text(p,M+2,y[0]+ch/2+1.5);
+    days.forEach((_,i)=>{const on=(s.schedule[p]||[])[i];if(on){sf(...onBg);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');fn(7,'bold');st(...onTx);doc.text('✓',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'})}else{sf(245,247,252);doc.roundedRect(M+lw+i*cw3+.5,y[0]+.5,cw3-1.5,ch-1,1,1,'F');fn(7,'normal');st(210,218,230);doc.text('—',M+lw+i*cw3+cw3/2,y[0]+ch/2+1.5,{align:'center'})}});y[0]+=ch+1;
   });
-  const mv=s.motivacao;
-  scoreChart=new Chart(document.getElementById('scoreChart'),{
-    type:'doughnut',
-    data:{datasets:[{data:[mv,5-mv],backgroundColor:[mv>=4?'#10B981':mv>=3?'#F59E0B':'#F43F5E','#F1F5F9'],borderWidth:0,cutout:'78%'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}
-  });
-  const vc=['#0EA5A0','#1A56DB','#7C3AED','#F59E0B','#F43F5E','#10B981','#3B82F6','#EC4899'];
-  donutChart=new Chart(document.getElementById('donutChart'),{
-    type:'doughnut',
-    data:{labels:s.vocacional.length?s.vocacional:['Não definido'],
-      datasets:[{data:s.vocacional.length?s.vocacional.map((_,i,a)=>Math.round(100/a.length)):[100],
-        backgroundColor:vc.slice(0,Math.max(s.vocacional.length,1)),borderWidth:3,borderColor:'#fff'}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{font:{size:9.5,family:"'DM Sans'"},boxWidth:11,padding:9}}}}
-  });
+  const tot=Object.values(s.schedule).flat().filter(x=>x).length;fn(7,'normal');st(100,116,139);doc.text('Turnos livres: '+tot+'/21',M,y[0]+4);y[0]+=8;
+  pair('Acesso à internet',s.acesso||'—','Atividades externas',(s.ativ||[]).filter(a=>a!=='Nenhuma').join(', ')||'Nenhuma');
+  if(s.ativDesc){chk(10);sf(248,250,255);doc.roundedRect(M,y[0],CW,8,1.5,1.5,'F');fn(6,'bold');st(100,116,139);doc.text('HORÁRIOS DAS ATIVIDADES',M+3,y[0]+3.2);fn(7.5,'normal');st(15,27,45);doc.text(doc.splitTextToSize(s.ativDesc,CW-8)[0],M+3,y[0]+7);y[0]+=10}
+
+  // ── E: EMOCIONAL ──
+  sec('Estado Emocional e Motivação','E');
+  pair('Como se sente',s.sentimento||'—','Nível de motivação',s.motivacao+'/5');
+  pair('Laudo/Diagnóstico',s.laudo||'Não','Situações dificultadoras',(s.dificSit||[]).join(', ')||'Nenhuma');
+  // Barra motivação
+  chk(12);const[mc1,mc2,mc3b]=s.motivacao>=4?[[209,250,229],[6,95,70],[16,185,129]]:s.motivacao>=3?[[254,243,199],[146,64,14],[245,158,11]]:[[255,228,230],[159,18,57],[244,63,94]];
+  sf(...mc1);doc.roundedRect(M,y[0],CW,10,2,2,'F');fn(7,'bold');st(...mc2);doc.text('Motivação:',M+4,y[0]+4.5);
+  const mbw2=CW-46;sf(220,228,240);doc.roundedRect(M+32,y[0]+3,mbw2,4,1,1,'F');sf(...mc3b);doc.roundedRect(M+32,y[0]+3,mbw2*s.motivacao/5,4,1,1,'F');fn(8,'bold');st(...mc2);doc.text(s.motivacao+'/5',M+CW-2,y[0]+6.5,{align:'right'});y[0]+=13;
+
+  // ── F: EXPECTATIVAS ──
+  sec('Expectativas da Mentoria','F');
+  tags('O que espera da mentoria',s.espera);
+  // obs
+  if(s.obs){const obsLines=doc.splitTextToSize(s.obs,CW-12);const obsH=Math.max(16,obsLines.length*4.8+10);chk(obsH+4);sf(250,251,255);doc.roundedRect(M,y[0],CW,obsH,2,2,'F');sf(26,86,219);doc.rect(M,y[0],3.5,obsH,'F');fn(6,'bold');st(100,116,139);doc.text('OBSERVAÇÕES DO ALUNO',M+6,y[0]+5);fn(8,'normal');st(15,27,45);obsLines.slice(0,6).forEach((l,i)=>doc.text(l,M+6,y[0]+10+i*4.8));y[0]+=obsH+4}
+
+  // ── G: INSIGHTS ──
+  sec('Análise e Insights do Mentor','G');
+  const ic2={good:{bg:[209,250,229],tx:[6,95,70],bar:[16,185,129],lb:'Positivo'},warn:{bg:[254,243,199],tx:[146,64,14],bar:[245,158,11],lb:'Atenção'},info:{bg:[237,233,254],tx:[91,33,182],bar:[124,58,237],lb:'Info'}};
+  s.insights.forEach(ins=>{const cfg=ic2[ins.type]||ic2.info;const lines=doc.splitTextToSize(ins.text,CW-30);const h=Math.max(12,lines.length*4.8+6);chk(h+4);sf(...cfg.bg);doc.roundedRect(M,y[0],CW,h,2,2,'F');sf(...cfg.bar);doc.roundedRect(M,y[0],3.5,h,2,2,'F');const bw3=doc.getTextWidth(cfg.lb)+5;sf(...cfg.bar);doc.roundedRect(M+CW-bw3-1,y[0]+1.5,bw3,5,1.5,1.5,'F');fn(6,'bold');st(255,255,255);doc.text(cfg.lb,M+CW-bw3/2-1,y[0]+4.8,{align:'center'});fn(8.5,'bold');st(...cfg.tx);doc.text(ins.icon,M+5,y[0]+h/2+1.5);fn(8,'normal');st(...cfg.tx);lines.forEach((l,i)=>doc.text(l,M+13,y[0]+6+i*4.8));y[0]+=h+4});
+  if(s.alert){chk(16);sf(255,243,199);doc.roundedRect(M,y[0],CW,14,2,2,'F');sf(245,158,11);doc.rect(M,y[0],3.5,14,'F');fn(8,'bold');st(120,53,15);doc.text('Alerta:',M+6,y[0]+6);fn(8,'normal');doc.text(doc.splitTextToSize(s.alert,CW-12)[0],M+6,y[0]+11);y[0]+=17}
+
+  // ── H: PLANO ──
+  sec('Plano de Estudos Personalizado','H');
+  sf(237,246,255);doc.roundedRect(M,y[0],CW,8,2,2,'F');fn(8,'bold');st(26,86,219);doc.text('Aluno: '+s.name+' · '+s.serie+' · Curso: '+s.curso,M+4,y[0]+5.3);y[0]+=11;
+  s.plano.forEach((p,i)=>{const lines=doc.splitTextToSize(p.texto.trim(),CW-25);const h=Math.max(11,lines.length*4.5+7);chk(h+3);const[pr,pg,pb]=hx(p.cor);sf(...(i%2===0?[248,251,255]:[243,246,255]));doc.roundedRect(M,y[0],CW,h,2,2,'F');sf(pr,pg,pb);doc.roundedRect(M,y[0],4,h,2,2,'F');sf(pr,pg,pb);doc.circle(M+11,y[0]+h/2,4,'F');fn(7,'bold');st(255,255,255);doc.text(String(i+1),M+11,y[0]+h/2,{align:'center',baseline:'middle'});fn(8.5,'bold');st(15,27,45);doc.text(p.bold,M+18,y[0]+5.5);fn(8,'normal');st(70,90,130);lines.forEach((l,li)=>doc.text(l,M+18,y[0]+10+li*4.5));y[0]+=h+3});
+
+  // ── FOOTER ──
+  const tp=doc.internal.getNumberOfPages();
+  for(let p=1;p<=tp;p++){doc.setPage(p);sf(245,248,255);doc.rect(0,H-11,W,11,'F');sf(14,165,160);doc.rect(0,H-11,W,.8,'F');fn(6.5,'normal');st(100,116,139);doc.text('Documento confidencial — Mentoria CEPRA · Sistema de Mentoria Educacional',M,H-5);doc.text('Pág. '+p+'/'+tp,W-M,H-5,{align:'right'});fn(6.5,'bold');st(14,116,144);doc.text('CEPRA',W/2,H-5,{align:'center'})}
+  doc.save('CEPRA_'+s.name.replace(/\s+/g,'_')+'.pdf');showToast('📄 PDF exportado!','ok');
 }
 </script>
 </body>
