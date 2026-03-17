@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEPRA — Recuperar dados</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0C1220;color:white;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.box{background:white;color:#0C1220;border-radius:18px;padding:36px;max-width:480px;width:100%}
+.logo{font-size:1.6rem;font-weight:700;color:#0C1220;margin-bottom:4px}
+.logo em{color:#0EA5A0;font-style:italic}
+h2{font-size:1.1rem;font-weight:600;margin:20px 0 8px}
+p{font-size:.88rem;color:#64748B;line-height:1.6;margin-bottom:12px}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;margin-top:10px}
+.btn-teal{background:#0EA5A0;color:white}
+.btn-teal:hover{background:#0D9488}
+.btn-blue{background:#1A56DB;color:white}
+.btn-blue:hover{background:#1346C0}
+.btn-gray{background:#F1F5F9;color:#334155}
+.status{padding:14px 16px;border-radius:10px;font-size:.88rem;margin-top:14px;line-height:1.6}
+.status.ok{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7}
+.status.warn{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.status.err{background:#FFE4E6;color:#9F1239;border:1px solid #FDA4AF}
+.data-box{background:#F8FAFF;border:1px solid #E2E8F0;border-radius:8px;padding:12px;font-size:.75rem;color:#334155;margin-top:10px;word-break:break-all;max-height:120px;overflow-y:auto;font-family:monospace}
+.step{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.step-num{width:24px;height:24px;border-radius:50%;background:#0EA5A0;color:white;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-txt{font-size:.86rem;color:#334155;line-height:1.5}
+textarea{width:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:.8rem;font-family:monospace;color:#334155;resize:vertical;min-height:80px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">Mentoria <em>CEPRA</em></div>
+  <p style="margin-top:6px">Recuperação de dados da anamnese</p>
+
+  <div id="step1">
+    <h2>Recuperar meus dados</h2>
+    <p>Se você preencheu a anamnese neste dispositivo e navegador, seus dados estão salvos aqui. Clique abaixo para verificar.</p>
+    <button class="btn btn-teal" onclick="verificar()">Verificar meus dados →</button>
+  </div>
+
+  <div id="resultado" style="display:none"></div>
+</div>
+
+<script>
+function verificar(){
+  const result = document.getElementById('resultado');
+  const step1 = document.getElementById('step1');
+
+  // Search all localStorage keys for CEPRA data
+  const keys = Object.keys(localStorage).filter(k =>
+    k.startsWith('cepra_') || k.includes('formData') || k.includes('student') || k.includes('anamnese')
+  );
+
+  // Also look for any key that contains student data patterns
+  const allKeys = Object.keys(localStorage);
+  const possibleData = [];
+
+  allKeys.forEach(k => {
+    try {
+      const val = localStorage.getItem(k);
+      if(val && val.includes('nome') && val.includes('email') && val.length > 100){
+        possibleData.push({key: k, value: val});
+      }
+    } catch(e){}
+  });
+
+  // Try to find submitted student in the students array saved to localStorage
+  let found = [];
+
+  // Pattern 1: cepra_students key
+  try {
+    const stuStr = localStorage.getItem('cepra_students');
+    if(stuStr) {
+      const stus = JSON.parse(stuStr);
+      if(Array.isArray(stus) && stus.length > 0) found = found.concat(stus);
+    }
+  } catch(e){}
+
+  // Pattern 2: individual form data
+  try {
+    const fdStr = localStorage.getItem('cepra_formdata') || localStorage.getItem('formData');
+    if(fdStr) {
+      const fd = JSON.parse(fdStr);
+      if(fd && fd.nome) found.push(fd);
+    }
+  } catch(e){}
+
+  // Pattern 3: any key with nome+email pattern
+  possibleData.forEach(item => {
+    try {
+      const parsed = JSON.parse(item.value);
+      if(parsed && !Array.isArray(parsed) && parsed.nome) {
+        found.push(parsed);
+      } else if(Array.isArray(parsed)) {
+        parsed.forEach(p => { if(p && p.nome) found.push(p); });
+      }
+    } catch(e){}
+  });
+
+  // Deduplicate by name+email
+  const seen = new Set();
+  found = found.filter(s => {
+    const key = (s.nome||'')+(s.email||'');
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Also check if the page itself has the students array in memory
+  // (won't work cross-page but worth trying)
+
+  step1.style.display = 'none';
+
+  if(found.length === 0) {
+    result.style.display = 'block';
+    result.innerHTML = `
+      <div class="status err">
+        <strong>Nenhum dado encontrado neste dispositivo.</strong><br>
+        Isso pode significar que:<br>
+        • Você preencheu em outro dispositivo ou navegador<br>
+        • O cache do navegador foi limpo<br>
+        • Você usou o modo anônimo/privado
+      </div>
+      <h2 style="margin-top:16px">O que fazer agora?</h2>
+      <div class="step"><div class="step-num">1</div><div class="step-txt">Tente abrir o site no <strong>mesmo dispositivo e navegador</strong> onde preencheu</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-txt">Se usou Chrome, tente no Chrome. Se usou Safari, tente no Safari</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-txt">Se não encontrar, infelizmente os dados foram perdidos. Precisará preencher novamente no novo sistema</div></div>
+      <button class="btn btn-gray" onclick="location.reload()">← Tentar novamente</button>`;
+    return;
+  }
+
+  const exportData = JSON.stringify(found, null, 2);
+  const blob = new Blob([exportData], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+
+  result.style.display = 'block';
+  result.innerHTML = `
+    <div class="status ok">
+      <strong>✅ ${found.length} anamnese${found.length>1?'s':''} encontrada${found.length>1?'s':''}!</strong><br>
+      ${found.map(s=>`• ${s.nome||'Sem nome'} (${s.email||'sem e-mail'})`).join('<br>')}
+    </div>
+    <h2 style="margin-top:16px">Envie os dados para o mentor</h2>
+    <div class="step"><div class="step-num">1</div><div class="step-txt">Clique em <strong>"Baixar arquivo"</strong> abaixo</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-txt">Envie o arquivo <strong>.json</strong> para o mentor pelo WhatsApp</div></div>
+    <a href="${url}" download="cepra_meus_dados.json" class="btn btn-teal" style="display:block;text-decoration:none;text-align:center;padding:14px;border-radius:10px;background:#0EA5A0;color:white;font-weight:600;margin-top:10px">⬇️ Baixar arquivo dos meus dados</a>
+    <p style="margin-top:12px;font-size:.8rem;color:#94A3B8">Ou copie o texto abaixo e envie pelo WhatsApp:</p>
+    <textarea readonly onclick="this.select()">${exportData.substring(0,500)}${exportData.length>500?'...(continua)':''}</textarea>
+    <button class="btn btn-blue" onclick="copiar('${encodeURIComponent(exportData)}')" style="margin-top:8px">📋 Copiar tudo para área de transferência</button>`;
+}
+
+function copiar(encoded) {
+  const text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast('Copiado!');
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copiado!');
+  });
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#065F46;color:white;padding:10px 24px;border-radius:40px;font-size:.88rem;font-weight:600;z-index:999';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+</script>
+</body>
+</html>
